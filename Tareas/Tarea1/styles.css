@@ -1,0 +1,58 @@
+#sidebar h2,  .header-panel {
+   background-color: red;
+}
+
+p, .p{
+   text-align: justify;
+}
+
+.pages h1,h2  {
+    color: black;
+    text-align: justify;
+}
+  
+ h3, h4, h5, h6, .header-panel h1, a, a:focus, a:hover, .menu ul li a {
+    color: black;
+    text-align: justify;
+}
+
+.nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {
+   color: black;
+   background-color: red;
+}
+
+.h1, .h2, .h3, .h4, body, h1, h2, h3, h4, h5, h6 {
+   font-family: Arial;
+   text-align: justify;
+}
+
+.h1, h1 {
+   font-weight: bold;
+   text-align: justify;
+}
+
+.table {
+   width: 100% !important;
+   overflow-x: auto;
+}
+
+.col-xs-10 {
+   width: 100%;
+}
+    
+.menu ul li.active {
+   background-color: red;
+   position: relative;
+}
+
+#toc .nav>li.active>a:focus, #toc .nav>li.active>a:hover {
+   background-color: blue;
+}
+
+td, th{
+   text-align: left;
+}
+
+.h1>.subtitle{
+   font-size: 15px;
+}

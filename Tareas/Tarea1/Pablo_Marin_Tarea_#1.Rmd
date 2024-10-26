@@ -1,0 +1,117 @@
+---
+title: "Tarea#1"
+author: "Pablo Marin Castillo"
+date: "2024-09-14"
+output:
+  rmdformats::material:
+    highlight: haddock
+    css: styles.css
+---
+
+# Primera Parte
+
+## Creación y Manipulación de Vectores {.tabset .tabset-fade .tabset-pills} 
+<!--Este comando permite que sea un submenu {.tabset .tabset-fade .tabset-pills}  -->
+
+### Creación de Vectores
+
+#### Crea dos vectores de longitud 10 que contengan números enteros consecutivos. Por ejemplo, puedes usar la función seq() para generarlos.
+
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+vect_num1 <- c(seq(10)) #Se carga en variable vect_num1 un vector de 1 a 10
+vect_num2 <- c(seq(20, by = 1, length.out = 10)) #Se carga en variable vect_num2 un vector de 20 a 30
+cat("Vector 1: ",vect_num1)# Se muestra en patalla el vect_num1
+cat("Vector 2: ",vect_num2)# Se muestra en patalla el vect_num2
+```
+
+
+#### Crea un tercer vector que sea la suma de los dos vectores anteriores.
+
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+vect_sum <- vect_num1 + vect_num2 #En la variable vect_sum se almacena la suma de los 2 vectores anteriormente declarados
+
+cat("Vector suma: ",vect_sum)# Se muestra en patalla el vect_sum
+```
+
+### Operaciones con Vectores
+
+#### Realiza las siguientes operaciones con los vectores
+
+#### 1. Multiplicación de cada elemento de vector1 por 2.
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+vect_mult <- vect_num1 * 2 #En la variable vect_mult se almacena la multiplicacion del vect_num1 por 2
+
+cat("Resultado: ",vect_mult)# Se muestra en patalla el vect_mult
+```
+#### 2. División de cada elemento de vector2 entre 3.
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+vect_div <- vect_num2 / 3 #En la variable vect_div se almacena la division del vect_num2 entre 3
+
+cat("Resultado: ",vect_div)# Se muestra en patalla el vect_div
+```
+#### 3. Cálculo del promedio de vector_suma.
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+cat("Promedio: ",mean(vect_sum))# Se muestra en patalla el promedio del vect_sum
+```
+
+# Segunda Parte
+
+## Creación y Manipulación de Matrices {.tabset .tabset-fade .tabset-pills} 
+<!--Este comando permite que sea un submenu {.tabset .tabset-fade .tabset-pills}  -->
+
+### Creación de una Matriz
+
+#### Crea una matriz de 3x3 que contenga los números del 1 al 9 usando la función matrix(). Asegúrate de rellenar la matriz por filas o columnas, según prefieras.
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+mat_matriz <- matrix(1:9,byrow=TRUE,nrow=3)#Se crea variable matriz con los valores de 1 a 9 
+
+mat_matriz# Se muestra en patalla el promedio del vect_sum
+```
+### Operaciones con la Matriz
+
+#### Realiza las siguientes operaciones 
+
+##### 1. Calcula la transpuesta de la matriz usando la función t().
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+t(mat_matriz)#Muestra la matriz transpuesta
+```
+
+##### 2. Calcula la suma de todas las filas y de todas las columnas utilizando la función rowSums() y colSums().
+
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+cat("Suma de Filas:", rowSums(mat_matriz))#Muestra la suma de fila de la matriz
+cat("Suma de Columnas:", colSums(mat_matriz))#Muestra la suma de columnas de la matriz
+```
+
+# Tercera Parte
+
+## Visualización de Resultados con plot() {.tabset .tabset-fade .tabset-pills} 
+<!--Este comando permite que sea un submenu {.tabset .tabset-fade .tabset-pills}  -->
+
+### Generar un Gráfico con plot()
+
+#### 1. Utiliza la función plot() para crear un gráfico de línea que muestre los elementos de vector_suma en el eje Y y sus índices (del 1 al 10) en el eje X.
+#### 2. Personaliza el gráfico añadiendo un título, etiquetas para los ejes y cambiando el tipo de línea.
+
+<!--Cuadro para ejecutar codigo en R  -->
+```{r}
+# Crear un gráfico de línea para vector de suma
+plot(vect_sum, type = "o", main = "Gráfico de Línea: Vector Suma", 
+     xlab = "Índice", ylab = "Valor", col = "blue", lty =2, pch = 16, xaxt = "n" ) 
+# Añadir los índices personalizados en el eje X
+axis(1, at = 1:10)
+
+# Añadir los valores del vector personalizados en el eje Y
+axis(2, at = seq(min(vect_sum) - 1, max(vect_sum) + 1, by = 1))
+
+# Añadir una leyenda (opcional)
+legend("topright", legend = "Vector Suma", col = "blue", lty =1, pch = 16)
+```

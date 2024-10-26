@@ -1,0 +1,52 @@
+---
+title: "Integración de HTML y RMarkdown"
+author: "Pablo Marin"
+date: "2024-10-22"
+output: html_document
+---
+
+# Tarea#3: Integración de HTML y RMarkdown
+
+## Objetivo
+
+El objetivo de este informe es poner en práctica lo que hemos aprendido sobre HTML y RMarkdown, combinando ambas herramientas para crear un informe en formato HTML. A través de este proyecto, podremos generar un análisis sencillo en R, incluyendo gráficos y cálculos, y luego enriquecer el informe añadiendo componentes interactivos de HTML. Esta tarea nos permitirá aplicar de manera integrada los conceptos de programación y visualización de datos, con el fin de mejorar tanto la presentación como la comprensión de la información.
+
+Análisis simple en R que incluya lo siguiente:
+
+-   Crear un vector con los números del 1 al 10.
+
+    ```{r}
+    vector <- c(1:10)#Se crea variable vector con valores del 1 al 10
+    print(vector)# Se imprime variable vector
+    ```
+
+-   Calcular la media y la suma de los valores del vector.
+
+    -   Media Vector
+
+        ```{r}
+        print(mean(vector)) #Mostramos en pantalla el resultado de llamar la funcion mean para la variable vector
+        ```
+
+    -   Suma Vector
+
+        ```{r}
+        print(sum(vector)) #Mostramos en pantalla el resultado de sumar los varoles del vector
+        ```
+
+-   Incluir un gráfico sencillo utilizando la función plot() para graficar el vector.
+
+```{r}
+#Generamos con los valores del vertor un grafico con plot()
+
+plot(vector, 
+     main = "Gráfico de Números del 1 al 10", 
+     xlab = "Índice", 
+     ylab = "Valor", 
+     col = "red", 
+     pch = 19)
+
+#Le colocamo una linea que conecta los puntos
+
+lines(vector, col = "blue", lwd = 2)
+```
