@@ -13,6 +13,7 @@ body {
     font-family: 'Comic Sans MS', sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #45a049;
 }
 
 header, footer {
@@ -46,6 +47,7 @@ nav ul li a {
 
 nav ul li a:hover {
     text-decoration: underline;
+    background-color: #810101;
 }
 
 /* Estilo del iframe para ocupar toda la pantalla */
@@ -165,7 +167,7 @@ main {
 
 .image-box img {
     width: 100%;
-    max-width: 480px;
+    max-width: 700px;
     height: auto;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -188,9 +190,19 @@ input {
     margin-bottom: 1%;
 }
 
+textarea
+{
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 70%;
+    font-size: 16px;
+    margin-bottom: 1%;
+}
+
 button {
     padding: 15px;
-    background-color: #4CAF50;
+    background-color: #384dc0;
     color: white;
     border: none;
     border-radius: 8px;
@@ -200,6 +212,6 @@ button {
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #bb3f06;
 }
 

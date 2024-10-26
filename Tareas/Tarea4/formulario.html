@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarea #4</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <script>
+      function mostrarDatos(event) {
+            // Previene que el formulario se envíe y recargue la página
+            event.preventDefault();
+
+            // Captura los valores de los campos del formulario
+            var nombre = document.getElementById("nombre").value;
+            var email = document.getElementById("email").value;
+            var opinion = document.getElementById("opinion").value;
+            // Muestra los datos en un mensaje emergente
+            alert("Nombre: " + nombre + "\nCorreo electrónico: " + email+"\nOpinión: "+opinion);
+
+            // Limpiar los campos del formulario
+            document.getElementById("nombre").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("opinion").value = "";
+        }
+    </script>
+
+
+    <main>
+
+        <section class="content-box">
+            <h2>Danos tu opinión</h1>
+                <form onsubmit="mostrarDatos(event)">
+                    <input type="text" id="nombre" name = "nombre" placeholder="Nombre" required>
+                    <input type="email" id="email" name= "email" placeholder="Email" required>
+                    <textarea id="opinion" name="opinion" rows="20" cols="50"
+                        placeholder="Escribe tus opiniones aquí..."></textarea><br><br>
+                    <br>
+                    <button type="submit">Enviar</button>
+                </form>
+                <p id="resultado"></p>
+        </section>
+
+        <section class="image-box">
+            <img src="Naruto2.jpg" alt="Imagen de ejemplo">
+        </section>
+    </main>
+</body>
+
+</html>
