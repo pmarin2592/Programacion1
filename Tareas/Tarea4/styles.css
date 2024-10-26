@@ -129,6 +129,13 @@ p {
 .carousel img.active {
     opacity: 1;
 }
+/* Contenedor Principal */
+main {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 40px 10%;
+}
 
 * Sección de Contenido */
 .content-box {
