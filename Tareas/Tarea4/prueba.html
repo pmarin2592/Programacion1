@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página con Header, Footer y Menú Horizontal</title>
+    <style>
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Estructura de la página */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        header, footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        /* Menú horizontal */
+        nav {
+            background-color: #444;
+            padding: 0.5rem;
+        }
+
+        nav ul {
+            list-style-type: none;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 1rem;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* Contenido principal centrado */
+        .main-content {
+            display: flex;
+            flex: 1;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* Ejemplo de texto centrado */
+        .content {
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header con menú -->
+    <header>
+        <h1>Mi Sitio Web</h1>
+        <p>Encabezado fijo</p>
+    </header>
+
+    <!-- Menú horizontal -->
+    <nav>
+        <ul>
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#">Servicios</a></li>
+            <li><a href="#">Acerca de</a></li>
+            <li><a href="#">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenido principal centrado -->
+    <div class="main-content">
+        <div class="content">
+            <h2>Contenido Principal</h2>
+            <p>Aquí va el contenido de cada página.</p>
+        </div>
+    </div>
+
+    <!-- Footer fijo -->
+    <footer>
+        <p>Pie de página fijo</p>
+    </footer>
+
+</body>
+</html>

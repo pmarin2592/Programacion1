@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarea #4</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="carousel">
+        <!-- Agrega aquí tus imágenes -->
+        <img src="Naruto1.jpg" alt="Imagen 1" class="active">
+        <img src="Naruto2.jpg" alt="Imagen 2">
+        <img src="Naruto3.jpg" alt="Imagen 3">
+        <img src="Naruto4.jpg" alt="Imagen 4">
+        <img src="Naruto5.jpg" alt="Imagen 5">
+        <img src="Naruto6.jpg" alt="Imagen 6">
+        <img src="Naruto7.jpg" alt="Imagen 7">
+      
+    </div>
+   
+    <script>
+        // JavaScript para el cambio automático de imágenes
+        let index = 0;
+        const images = document.querySelectorAll('.carousel img');
+        const totalImages = images.length;
+
+        function showNextImage() {
+            // Oculta la imagen actual
+            images[index].classList.remove('active');
+            // Cambia al siguiente índice
+            index = (index + 1) % totalImages;
+            // Muestra la nueva imagen
+            images[index].classList.add('active');
+        }
+
+        // Cambia de imagen cada 3 segundos
+        setInterval(showNextImage, 3000);
+    </script>
+
+</body>
+</html>
