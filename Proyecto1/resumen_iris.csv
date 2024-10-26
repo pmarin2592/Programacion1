@@ -1,0 +1,4 @@
+"","tipo","s.largo_Maximo","s.largo_Promedio","s.largo_Conteo","s.ancho_Maximo","s.ancho_Promedio","s.ancho_Conteo","p.largo_Maximo","p.largo_Promedio","p.largo_Conteo","p.ancho_Maximo","p.ancho_Promedio","p.ancho_Conteo"
+"1","setosa",5.8,5.006,50,4.4,3.418,50,1.9,1.464,50,0.6,0.244,50
+"2","versicolor",7,5.936,50,3.4,2.77,50,5.1,4.26,50,1.8,1.326,50
+"3","virginica",7.9,6.588,50,3.8,2.974,50,6.9,5.552,50,2.5,2.026,50
