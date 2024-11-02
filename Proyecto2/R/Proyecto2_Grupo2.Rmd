@@ -35,6 +35,9 @@ output:
 library(readr)
 library(dplyr)
 library(DT)
+library(ggplot2)
+library(tidyr)
+library(fmsb)
 ```
 
 # Set de Datos
@@ -54,7 +57,9 @@ names(origi_data21)#Columnas del set de datos
 str(origi_data21)
 glimpse(origi_data21)
 ```
-### Selección de columnas necesarias: 
+
+### Selección de columnas necesarias:
+
 ```{r message=FALSE, warning=FALSE}
 fdata_21<-origi_data21[,c("short_name","player_positions","overall","potential","value_eur","age", "club_name", "league_name", "nationality_name", "preferred_foot", "pace", "shooting", "passing", "dribbling", "defending", "physic")]
 
@@ -62,7 +67,10 @@ fdata_22<-origi_data22[,c("short_name","player_positions","overall","potential",
 
 ```
 
-### Data y dimenciones: 
+### Data y dimenciones:
+
+Tablas de los set de datos utilizados años (2021-2022)
+
 ```{r}
 fdata_21
 dim(fdata_21)
@@ -71,6 +79,163 @@ fdata_22
 dim(fdata_22)
 ```
 
+# Hipotesis #1
+
+¿Cuál es la mayor conformación de jugadores "Elite" en las 5 grandes ligas?
+
+#### Datos del año 2021
+
+```{r}
+#Ciclo for que clasifica cada jugador en categorias 
+fdata_21$clasificacion <- NA
+
+for (i in 1:nrow(fdata_21)) {
+    if (fdata_21$overall[i] >= 80) {
+      fdata_21$clasificacion[i] <- "Elite"
+    } else if (fdata_21$overall[i] >= 60) {
+      fdata_21$clasificacion[i] <- "Bueno"
+    } else {
+      fdata_21$clasificacion[i] <- "Promedio"
+    }
+}
+
+#Datos de las 5 grandes ligas 
+five_league21<-fdata_21 %>% 
+  filter(league_name %in% c("Spain Primera Division","English Premier League",                              "Italian Serie A","German 1. Bundesliga",
+                            "French Ligue 1") & clasificacion == "Elite" )
+
+#Grafico de barras
+ggplot(five_league21, aes(x = league_name)) + 
+  geom_bar(fill = "#1f77b4", color = "black") + 
+  labs(title = "Distribución de jugadores Elite por liga año 2021", x = "Ligas", y = "Número de Jugadores")+
+  scale_x_discrete(labels = c("Spain Primera Division" = "La Liga (España)",
+                              "English Premier League" = "Premier League (Inglaterra)",
+                              "Italian Serie A" = "Serie A (Italia)",
+                              "German 1. Bundesliga" = "Bundesliga (Alemania)",
+                              "French Ligue 1" = "Ligue 1 (Francia)"))+
+  theme(panel.background = element_rect(fill = "#C1CDC1"))
+
+
+```
+
+#### Datos del año 2022
+
+```{r}
+fdata_22$clasificacion <- NA
+
+for (i in 1:nrow(fdata_22)) {
+    if (fdata_22$overall[i] >= 80) {
+      fdata_22$clasificacion[i] <- "Elite"
+    } else if (fdata_22$overall[i] >= 60) {
+      fdata_22$clasificacion[i] <- "Bueno"
+    } else {
+      fdata_22$clasificacion[i] <- "Promedio"
+    }
+}
+
+five_league22<-fdata_22 %>% 
+  filter(league_name %in% c("Spain Primera Division","English Premier League",                              "Italian Serie A","German 1. Bundesliga",
+                            "French Ligue 1") & clasificacion == "Elite" )
+
+ggplot(five_league22, aes(x = league_name)) + 
+  geom_bar(fill = "#ff7f0e", color = "black") + 
+  labs(title = "Distribución de jugadores Elite por liga año 2022", x = "Ligas",       y = "Número de Jugadores")+
+  scale_x_discrete(labels = c("Spain Primera Division" = "La Liga (España)",
+                              "English Premier League" = "Premier League (Inglaterra)",
+                              "Italian Serie A" = "Serie A (Italia)",
+                              "German 1. Bundesliga" = "Bundesliga (Alemania)",
+                              "French Ligue 1" = "Ligue 1 (Francia)"))+
+  theme(panel.background = element_rect(fill = "#C1CDC1"))
+
+
+```
+
+#### Comparación final
+
+```{r message=FALSE, warning=FALSE}
+five_league21$year <- 2021 
+five_league22$year <-2022
+
+union_data <- rbind(five_league21, five_league22)
+                       
+ggplot(union_data, aes(x = league_name, fill = as.factor(year), y = ..count..)) + geom_bar(position = "dodge") + labs(title = "Comparativa de Jugadores Elite por Liga (2021 vs 2022)", x = "Ligas", y = "Número de Jugadores") + scale_x_discrete(labels = c("Spain Primera Division" = "La Liga(España)", "English Premier League" = "Premier League(Inglaterra)", "Italian Serie A" = "Serie A(Italia)", "German 1. Bundesliga" = "Bundesliga(Alemania)", "French Ligue 1" = "Ligue 1(Francia)")) + scale_fill_discrete(name = "Año") +
+scale_fill_manual(values = c("2021" = "#1f77b4", "2022" = "#ff7f0e"), name = "Año")+  
+theme(panel.background = element_rect(fill = "#C1CDC1"))                      
+```
+
+# Hipotesis #3
+
+```{r}
+#Creacion de dataframe con las habilidades de los jugadores 
+data21_habil <- fdata_21 %>% 
+  select(short_name,potential, everything()[11:16])
+
+#Limpieza de los datos(Eliminancion de NA no se uso por no tener informacion sobre sus estadisticas)
+fdata21_habilidades<- data21_habil %>% 
+  drop_na()
+
+#Dataframe para la prediccion de los jugadores 
+fdata21_habild_predic<- fdata21_habilidades %>% 
+  select(short_name, everything()[3:8])
+
+#Ciclo con codiciones en el que se evalua el potencial del jugador 
+for (i in 1:nrow(fdata21_habilidades)) { 
+  if (fdata21_habilidades$potential[i] >= 90) { 
+    fdata21_habild_predic[i, 2:7] <- fdata21_habild_predic[i, 2:7] + 1 } 
+  else if (fdata21_habilidades$potential[i] >= 70) { 
+    fdata21_habild_predic[i, 2:7] <- fdata21_habild_predic[i, 2:7] + 2 } 
+  else if (fdata21_habilidades$potential[i] >= 60) { 
+    fdata21_habild_predic[i, 2:7] <- fdata21_habild_predic[i, 2:7] - 1 } 
+  else { fdata21_habild_predic[i, 2:7] <- fdata21_habild_predic[i, 2:7] + 0 }
+}
+
+#Pesos(Valor porcentual importancia conforme a la calificacion)
+pesos <- c(pace = 0.2, shooting = 0.2, passing = 0.2, dribbling = 0.2, defending = 0.1, physic = 0.1)
+
+# Usar sapply para calcular el overall_habilidades de la tabla de habilidades"fdata21_habilidades"
+fdata21_habilidades$overall_habilidad <- sapply(1:nrow(fdata21_habilidades), function(i) {
+  sum(fdata21_habilidades[i,3:8 ] * pesos)
+})
+
+# Usar sapply para calcular el overall_habilidades de la tabla de prediccion "fdata21_habild_predic"
+fdata21_habild_predic$overall_habilidades <- sapply(1:nrow(fdata21_habild_predic), function(i) {
+  sum(fdata21_habild_predic[i,2:7 ] * pesos)
+})
+
+print(head(fdata21_habilidades))
+print(head(fdata21_habild_predic))
+```
+
+#### Comparativa del desarrollo de la temporada de los jugadores
+
+```{r message=FALSE, warning=FALSE}
+graf_predic <- fdata21_habild_predic %>% 
+  slice(1) %>% 
+  select(pace, shooting, passing, dribbling, defending, physic)
+
+graf_22<-fdata_22 %>% 
+  slice(1) %>% 
+  select(pace,shooting,passing,dribbling,defending,physic)
 
 
 
+combined_habilidades <- rbind(graf_predic, graf_22)
+
+max_min <- rbind(rep(100, 7), rep(0, 7), combined_habilidades)
+colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic", "potential")
+
+
+radarchart( 
+  max_min[c(1, 2, 3, 4),], 
+  axistype = 1, 
+  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9)), 
+  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5)), 
+  plwd = 4, cglcol = "grey", 
+  cglty = 1, axislabcol = "grey", 
+  caxislabels = seq(0, 100, 20), 
+  cglwd = 0.8, vlcex = 0.8,
+  title = "Comparativa de habilidades de L.Messi en 2021 y 2022"
+  )
+
+                 
+```
