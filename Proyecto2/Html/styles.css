@@ -1,0 +1,83 @@
+  body {
+    font-family: "Lato", sans-serif;
+    transition: background-color .5s;
+    background-color: #fcf7f7;
+    width: auto;
+    height: auto;
+  }
+  
+  .sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+  }
+  
+  .sidenav a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+  }
+  
+  .sidenav a:hover {
+    color: #f1f1f1;
+  }
+  
+  .sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+  }
+  
+  #main {
+    transition: margin-left .5s;
+    padding: 16px;
+    background-color: #101cc0;
+  }
+  
+  @media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+  }
+
+  /* Contenido principal centrado */
+ .main-content {
+    display: flex;
+    flex: 1;
+    justify-content: stretch;
+    align-items: stretch;
+    text-align: stretch;
+    transition: margin-left .5s;
+    margin: 0;
+    padding: 0;
+ }
+
+ #main-data #main-iframe{
+    transition: margin-left .5s;
+    padding: 16px;
+ }
+
+ /* Estilo del iframe para ocupar toda la pantalla */
+ iframe {
+    width: 100%;
+    height: 85vh; /* Altura completa de la pantalla */
+    border: none;
+ } 
+
+ footer {
+    color: #fff;
+    text-align: center; 
+    background-color: #101cc0;
+}
+

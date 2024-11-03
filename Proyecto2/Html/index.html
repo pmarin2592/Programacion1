@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto #2 Análisis Deportivo: Rendimiento de Atletas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+     <!-- Enlace al archivo JavaScript -->
+     <script src="funciones.js"></script>
+    <!-- Menú Vertical -->
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="portada.html">Inicio</a>
+        <a href="#">Análisis Deportivo</a>
+        <a href="#">Graficos</a>
+        <a href="#">Dashboard</a>
+    </div>
+    
+    <div id="main">
+        <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; Proyecto #2 Análisis Deportivo: Rendimiento de Atletas</span>
+    </div>
+    <!-- Contenido principal centrado -->
+    <div id="main-data" class="main-content">
+        <!-- Iframe donde se cargará el contenido -->
+        <iframe id="main-iframe" name="contentFrame" src="portada.html"></iframe>
+    </div>
+
+    <!-- Footer fijo -->
+    <footer>
+        <p>&copy; 2024 Grupo #2 Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
