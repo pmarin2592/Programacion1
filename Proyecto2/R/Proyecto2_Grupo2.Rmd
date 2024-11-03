@@ -32,12 +32,13 @@ output:
 # Librerias
 
 ```{r message=FALSE, warning=FALSE}
-library(readr)
-library(dplyr)
-library(DT)
-library(ggplot2)
-library(tidyr)
-library(fmsb)
+library(readr)#importación de datos
+library(dplyr)#manipulación de datos
+library(DT)#tablas interactivas
+library(ggplot2)#creación de gráficos
+library(tidyr)#Limpieza de datos
+library(fmsb)#gráficos de radar etc
+library(gridExtra)#Combinar los gráficos
 ```
 
 # Set de Datos
@@ -47,15 +48,8 @@ library(fmsb)
 origi_data21 <- read_csv("players_21.csv", col_names = TRUE)
 #Dataset original jugadores de fifa22
 origi_data22<-read_csv("players_22.csv", col_names = TRUE)
-```
-
-## Conocimiento de los datos
-
-```{r results='hide'}
-names(origi_data21)#Columnas del set de datos
-#Visión general del set de datos
-str(origi_data21)
-glimpse(origi_data21)
+#Dataset original jugadores de fifa15
+origi_data15<-read_csv("players_15.csv", col_names = TRUE)
 ```
 
 ### Selección de columnas necesarias:
@@ -66,6 +60,25 @@ fdata_21<-origi_data21[,c("short_name","player_positions","overall","potential",
 fdata_22<-origi_data22[,c("short_name","player_positions","overall","potential","value_eur","age", "club_name", "league_name", "nationality_name", "preferred_foot", "pace", "shooting", "passing", "dribbling", "defending", "physic")]
 
 ```
+
+## Conocimiento de los datos
+```{r results='hide'}
+names(origi_data21)#Columnas del set de datos
+#Visión general del set de datos
+str(origi_data21)
+glimpse(origi_data21)
+
+#Nulos set de datos players_21
+any(is.na(fdata_21))#Conocimiento de valores nulos
+sum(is.na(fdata_21))#Suma total de valores nulos
+sapply(fdata_21, function(x) sum(is.na(x)))# Contar valores NA por columna
+
+#Nulos set de datos players_22
+any(is.na(fdata_22))#Conocimiento de valores nulos
+sum(is.na(fdata_22))#Suma total de valores nulos
+sapply(fdata_22, function(x) sum(is.na(x)))# Contar valores NA por columna
+```
+
 
 ### Data y dimenciones:
 
@@ -83,7 +96,7 @@ dim(fdata_22)
 
 ¿Cuál es la mayor conformación de jugadores "Elite" en las 5 grandes ligas?
 
-#### Datos del año 2021
+## Datos del año 2021
 
 ```{r}
 #Ciclo for que clasifica cada jugador en categorias 
@@ -118,7 +131,7 @@ ggplot(five_league21, aes(x = league_name)) +
 
 ```
 
-#### Datos del año 2022
+## Datos del año 2022
 
 ```{r}
 fdata_22$clasificacion <- NA
@@ -150,7 +163,7 @@ ggplot(five_league22, aes(x = league_name)) +
 
 ```
 
-#### Comparación final
+## Comparación final
 
 ```{r message=FALSE, warning=FALSE}
 five_league21$year <- 2021 
@@ -164,6 +177,8 @@ theme(panel.background = element_rect(fill = "#C1CDC1"))
 ```
 
 # Hipotesis #3
+
+Conforme al potencial actual del jugador¿Cómo evolucionaría en la siguiente temporada?
 
 ```{r}
 #Creacion de dataframe con las habilidades de los jugadores 
@@ -209,20 +224,22 @@ print(head(fdata21_habild_predic))
 #### Comparativa del desarrollo de la temporada de los jugadores
 
 ```{r message=FALSE, warning=FALSE}
-graf_predic <- fdata21_habild_predic %>% 
+#Datos de predicción del jugador L.Messi 
+messi_predic <- fdata21_habild_predic %>% 
   slice(1) %>% 
   select(pace, shooting, passing, dribbling, defending, physic)
 
-graf_22<-fdata_22 %>% 
+#Datos del 2022 del jugador L.Messi
+messi_22<-fdata_22 %>% 
   slice(1) %>% 
   select(pace,shooting,passing,dribbling,defending,physic)
 
 
 
-combined_habilidades <- rbind(graf_predic, graf_22)
+vect_messi <- rbind(messi_predic, messi_22)
 
-max_min <- rbind(rep(100, 7), rep(0, 7), combined_habilidades)
-colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic", "potential")
+max_min <- rbind(rep(100,6 ), rep(0, 6), vect_messi)
+colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic")
 
 
 radarchart( 
@@ -239,3 +256,228 @@ radarchart(
 
                  
 ```
+
+## Jugador Lucas Moura
+
+```{r}
+#Datos de predicción del jugador Lucas Moura 
+  moura_predic <- fdata21_habild_predic %>% 
+    filter(short_name == "Lucas Moura") %>% 
+    select(pace, shooting, passing, dribbling, defending, physic)
+  
+  #Datos del 2022 del jugador Lucas Moura
+  moura_2022<-fdata_22 %>% 
+    filter(short_name == "Lucas Moura") %>% 
+    select(pace, shooting, passing, dribbling, defending, physic)
+  
+  #Grafico de radar
+  vect_moura <- rbind(moura_predic, moura_2022)
+  
+  max_min <- rbind(rep(100, 6), rep(0, 6), vect_moura)
+  colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic")
+  
+  
+  radarchart( 
+    max_min[c(1, 2, 3, 4),], 
+    axistype = 1, 
+    pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9)), 
+    pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5)), 
+    plwd = 4, cglcol = "grey", 
+    cglty = 1, axislabcol = "grey", 
+    caxislabels = seq(0, 100, 20), 
+    cglwd = 0.8, vlcex = 0.8,
+    title = "Comparativa de habilidades de Lucas Moura en 2021 y 2022"
+  )
+  
+  
+```
+
+#### Lucas Moura desarrollo años 2015,2021 y 2022
+
+```{r}
+moura_2015 <- origi_data15 %>% 
+  filter(long_name == "Lucas Rodrigues Moura da Silva") %>% 
+  select(pace, shooting, passing, dribbling, defending, physic)
+
+vect_moura_t <- rbind(moura_predic, moura_2022, moura_2015) 
+
+max_min <- rbind(rep(100, 6), rep(0, 6), vect_moura_t)
+colnames(max_min) <- colnames(vect_moura_t)
+
+radarchart( 
+  max_min[c(1, 2, 3, 4, 5),], 
+  axistype = 1, 
+  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9), rgb(0.2, 0.7, 0.3, 0.9)), 
+  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5), rgb(0.2, 0.7, 0.3, 0.5)), 
+  plwd = 4, 
+  cglcol = "grey", 
+  cglty = 1, 
+  axislabcol = "grey", 
+  caxislabels = seq(0, 100, 20), 
+  cglwd = 0.8, 
+  vlcex = 0.8,
+  title = "Comparativa de habilidades de Lucas Moura en 2015-2022"
+)
+```
+
+## Jugador Sadio Mane
+
+```{r}
+#Datos de predicción del jugador Sadio Mané
+mane_predic <- fdata21_habild_predic %>% 
+  filter(short_name == "S. Mané") %>% 
+  select(pace, shooting, passing, dribbling, defending, physic)
+
+#Datos del 2022 del jugador Sadio Mané
+mane_2022<-fdata_22 %>% 
+  filter(short_name == "S. Mané") %>% 
+  select(pace, shooting, passing, dribbling, defending, physic)
+
+#Grafico de radar
+vect_mane <- rbind(mane_predic, mane_2022)
+
+max_min <- rbind(rep(100, 6), rep(0, 6), vect_mane)
+colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic")
+
+
+radarchart( 
+  max_min[c(1, 2, 3, 4),], 
+  axistype = 1, 
+  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9)), 
+  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5)), 
+  plwd = 4, cglcol = "grey", 
+  cglty = 1, axislabcol = "grey", 
+  caxislabels = seq(0, 100, 20), 
+  cglwd = 0.8, vlcex = 0.8,
+  title = "Comparativa de habilidades de S. Mané en 2021 y 2022"
+)
+
+```
+
+#### Sadio Mane desarrollo años 2015,2021 y 2022
+
+```{r}
+mane_2015 <- origi_data15 %>% 
+  filter(short_name == "S. Mané") %>% 
+  select(pace, shooting, passing, dribbling, defending, physic)
+
+vect_mane_t <- rbind(mane_predic, mane_2022, mane_2015) 
+
+max_min <- rbind(rep(100, 6), rep(0, 6), vect_mane_t)
+colnames(max_min) <- colnames(vect_mane_t)
+
+radarchart( 
+  max_min[c(1, 2, 3, 4, 5),], 
+  axistype = 1, 
+  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9), rgb(0.2, 0.7, 0.3, 0.9)), 
+  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5), rgb(0.2, 0.7, 0.3, 0.5)), 
+  plwd = 4, 
+  cglcol = "grey", 
+  cglty = 1, 
+  axislabcol = "grey", 
+  caxislabels = seq(0, 100, 20), 
+  cglwd = 0.8, 
+  vlcex = 0.8,
+  title = "Comparativa de habilidades de S. Mané en 2015-2022"
+)
+```
+
+## Jugador Virgil van Dijk
+
+```{r}
+#Datos de predicción del jugador Virgil van Dijk
+vanD_predic <- fdata21_habild_predic %>% 
+  filter(short_name == "V. van Dijk") %>% 
+  select(pace, shooting, passing, dribbling, defending, physic)
+
+#Datos del 2022 del jugador Virgil van Dijk
+vanD_2022<-fdata_22 %>% 
+  filter(short_name == "V. van Dijk") %>% 
+  select(pace, shooting, passing, dribbling, defending, physic)
+
+#Grafico de radar
+vect_vanD <- rbind(vanD_predic, vanD_2022)
+
+max_min <- rbind(rep(100, 6), rep(0, 6), vect_vanD)
+colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic")
+
+
+radarchart( 
+  max_min[c(1, 2, 3, 4),], 
+  axistype = 1, 
+  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9)), 
+  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5)), 
+  plwd = 4, cglcol = "grey", 
+  cglty = 1, axislabcol = "grey", 
+  caxislabels = seq(0, 100, 20), 
+  cglwd = 0.8, vlcex = 0.8,
+  title = "Comparativa de habilidades de Virgil van Dijk en 2021 y 2022"
+)   
+
+```
+
+#### Virgil van Dijk desarrollo años 2015,2021 y 2022
+
+```{r}
+vanD_2015 <- origi_data15 %>% 
+  filter(short_name == "V. van Dijk") %>% 
+  select(pace, shooting, passing, dribbling, defending, physic)
+
+vect_vanD_t <- rbind(vanD_predic, vanD_2022, vanD_2015) 
+
+max_min <- rbind(rep(100, 6), rep(0, 6), vect_vanD_t)
+colnames(max_min) <- colnames(vect_vanD_t)
+
+radarchart( 
+  max_min[c(1, 2, 3, 4, 5),], 
+  axistype = 1, 
+  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9), rgb(0.2, 0.7, 0.3, 0.9)), 
+  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5), rgb(0.2, 0.7, 0.3, 0.5)), 
+  plwd = 4, 
+  cglcol = "grey", 
+  cglty = 1, 
+  axislabcol = "grey", 
+  caxislabels = seq(0, 100, 20), 
+  cglwd = 0.8, 
+  vlcex = 0.8,
+  title = "Comparativa de habilidades de Virgil van Dijk en 2015-2022"
+)
+```
+
+# Otros graficos 
+```{r}
+#PIE HABIL de los jugadores del 2022
+pie_count22 <- fdata_22 %>% 
+  group_by(preferred_foot) %>% 
+  summarise(count = n()) %>% 
+  mutate(percentage = round(100 * count / sum(count), 1))
+
+#Grafico pastal datos del 2022
+plot_pie22 <- ggplot(pie_count22, aes(x = "", y = count, fill = preferred_foot)) + 
+  geom_bar(stat = "identity", width = 1) + 
+  coord_polar(theta = "y") + 
+  ggtitle("Distribución de Jugadores por Pie hábil(2022)") +
+  theme_void() + 
+  scale_fill_brewer(palette = "PuBuGn") + 
+  geom_text(aes(label = paste0(percentage, "%")), position = position_stack(vjust = 0.5), size = 5)
+
+#Pie habil de los jugadores del 2015
+pie_count15 <- origi_data15 %>% 
+  group_by(preferred_foot) %>% 
+  summarise(count = n()) %>% 
+  mutate(percentage = round(100 * count / sum(count), 1))
+
+#Grafico pastel datos del 2015
+plot_pie15 <- ggplot(pie_count15, aes(x = "", y = count, fill = preferred_foot)) + 
+  geom_bar(stat = "identity", width = 1) + 
+  coord_polar(theta = "y") + 
+  ggtitle("Distribución de Jugadores por Pie hábil(2015)") +
+  theme_void() + 
+  scale_fill_brewer(palette = "PuBuGn") + 
+  geom_text(aes(label = paste0(percentage, "%")), position = position_stack(vjust = 0.5), size = 5)
+
+#Combinacion de los graficos
+combined_plotff <- grid.arrange(plot_pie15, plot_pie22, ncol = 2)
+```
+
+
