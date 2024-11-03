@@ -3,7 +3,7 @@ function openNav() {
   document.getElementById("main").style.marginLeft = "250px";
   document.getElementById("main-data").style.marginLeft = "250px";
   document.getElementById("main-iframe").style.marginLeft = "250px";
-  document.body.style.backgroundColor = "rgba(0,0,0,0.4)";
+  //document.body.style.backgroundColor = "rgba(0,0,0,0.4)";
 }
 
 function closeNav() {
@@ -11,5 +11,5 @@ function closeNav() {
   document.getElementById("main").style.marginLeft= "0";
   document.getElementById("main-data").style.marginLeft = "0";
   document.getElementById("main-iframe").style.marginLeft = "0";
-  document.body.style.backgroundColor = "white";
+  //document.body.style.backgroundColor = "white";
 }
