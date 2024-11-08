@@ -39,6 +39,7 @@ library(ggplot2)#creación de gráficos
 library(tidyr)#Limpieza de datos
 library(fmsb)#gráficos de radar etc
 library(gridExtra)#Combinar los gráficos
+library(plotly)
 ```
 
 # Set de Datos
@@ -54,14 +55,41 @@ origi_data15<-read_csv("players_15.csv", col_names = TRUE)
 
 ### Selección de columnas necesarias:
 
-```{r message=FALSE, warning=FALSE}
-fdata_21<-origi_data21[,c("short_name","player_positions","overall","potential","value_eur","age", "club_name", "league_name", "nationality_name", "preferred_foot", "pace", "shooting", "passing", "dribbling", "defending", "physic")]
+Esta función busca las columnas necesarias del dataset original y crea uno nuevo y le agrega una columna nueva de clasificación
 
-fdata_22<-origi_data22[,c("short_name","player_positions","overall","potential","value_eur","age", "club_name", "league_name", "nationality_name", "preferred_foot", "pace", "shooting", "passing", "dribbling", "defending", "physic")]
+```{r message=FALSE, warning=FALSE}
+fun_dataNecesaria <- function(data) { # Seleccionar columnas deseadas
+  data <- data[, c("short_name", "player_positions", "overall", "potential",
+                   "value_eur", "age", "club_name", "league_name", "nationality_name",
+                   "preferred_foot", "pace", "shooting", "passing", "dribbling",
+                   "defending", "physic")] 
+  # Agregar columna de clasificación 
+  data$clasificacion <- NA
+  for (i in 1:nrow(data)) {
+    if (data$overall[i] >= 80) {
+      data$clasificacion[i] <- "Elite"
+    } else if (data$overall[i] >= 60) {
+      data$clasificacion[i] <- "Bueno"
+    } else {
+      data$clasificacion[i] <- "Promedio"
+    }
+  }
+  return(data)
+}
+
+```
+
+### Data a utilizar
+
+```{r message=FALSE, warning=FALSE}
+fdata_15<-fun_dataNecesaria(origi_data15)
+fdata_21<-fun_dataNecesaria(origi_data21)
+fdata_22<-fun_dataNecesaria(origi_data22)
 
 ```
 
 ## Conocimiento de los datos
+
 ```{r results='hide'}
 names(origi_data21)#Columnas del set de datos
 #Visión general del set de datos
@@ -79,8 +107,7 @@ sum(is.na(fdata_22))#Suma total de valores nulos
 sapply(fdata_22, function(x) sum(is.na(x)))# Contar valores NA por columna
 ```
 
-
-### Data y dimenciones:
+#### Data y dimenciones:
 
 Tablas de los set de datos utilizados años (2021-2022)
 
@@ -90,395 +117,435 @@ dim(fdata_21)
 
 fdata_22
 dim(fdata_22)
+
+fdata_15
+dim(fdata_15)
 ```
 
 # Hipotesis #1
 
 ¿Cuál es la mayor conformación de jugadores "Elite" en las 5 grandes ligas?
 
-## Datos del año 2021
+## Datos de las 5 grandes ligas 
+Esta función reune la información de las que consideramos las 5 grandes ligas Spain Primera Division,Premier League, Serie A,Bundesliga,Ligue 1
 
 ```{r}
-#Ciclo for que clasifica cada jugador en categorias 
-fdata_21$clasificacion <- NA
-
-for (i in 1:nrow(fdata_21)) {
-    if (fdata_21$overall[i] >= 80) {
-      fdata_21$clasificacion[i] <- "Elite"
-    } else if (fdata_21$overall[i] >= 60) {
-      fdata_21$clasificacion[i] <- "Bueno"
-    } else {
-      fdata_21$clasificacion[i] <- "Promedio"
-    }
-}
-
-#Datos de las 5 grandes ligas 
-five_league21<-fdata_21 %>% 
+#Datos de las 5 grandes ligas/ Funcion que busca datos de las 5 grandes ligas 
+fun_best_league<-function(data){
+  result_five<-data %>% 
   filter(league_name %in% c("Spain Primera Division","English Premier League",                              "Italian Serie A","German 1. Bundesliga",
                             "French Ligue 1") & clasificacion == "Elite" )
+  return(result_five)
+}
 
-#Grafico de barras
-ggplot(five_league21, aes(x = league_name)) + 
-  geom_bar(fill = "#1f77b4", color = "black") + 
-  labs(title = "Distribución de jugadores Elite por liga año 2021", x = "Ligas", y = "Número de Jugadores")+
-  scale_x_discrete(labels = c("Spain Primera Division" = "La Liga (España)",
-                              "English Premier League" = "Premier League (Inglaterra)",
-                              "Italian Serie A" = "Serie A (Italia)",
-                              "German 1. Bundesliga" = "Bundesliga (Alemania)",
-                              "French Ligue 1" = "Ligue 1 (Francia)"))+
-  theme(panel.background = element_rect(fill = "#C1CDC1"))
+```
+
+
+```{r}
+five_data15<-fun_best_league(fdata_15)#Del Dataset ingresado saca data de las 5 grandes ligas
+
+five_data22<-fun_best_league(fdata_22)
+```
+
+
+## Resultado de las mejores ligas
+
+```{r}
+# Función que crea un gráfico de barras interactivo con los resultados de los jugadores élite de cada liga
+fun_grafico_jugadores_elite_plotly <- function(data_final, year) {
+  # Contar el número de jugadores élite por liga
+  data_contada <- data_final %>%
+    count(league_name)
+  
+  # Crear el gráfico de barras interactivo
+  barras_plot1 <- plot_ly(
+    data = data_contada,
+    x = ~league_name,
+    y = ~n,  # 'n' es la columna generada por count() que contiene el conteo
+    type = 'bar',
+    marker = list(color = 'rgba(31, 119, 180, 0.8)', line = list(color = 'rgba(0, 0, 0, 1.0)', width = 1.5)),
+    text = ~n,
+    textposition = 'auto',
+    hoverinfo = 'x+y'
+  ) %>%
+    layout(
+      title = paste("Distribución de jugadores Elite por liga (", year, ")"),
+      xaxis = list(
+        title = "Ligas",
+        tickvals = c("Spain Primera Division", "English Premier League", "Italian Serie A", "German 1. Bundesliga", "French Ligue 1"),
+        ticktext = c("La Liga (España)", "Premier League (Inglaterra)", "Serie A (Italia)", "Bundesliga (Alemania)", "Ligue 1 (Francia)"),
+        tickangle = -45  # Rotar las etiquetas del eje x para mejor legibilidad
+      ),
+      yaxis = list(title = "Número de Jugadores"),
+      plot_bgcolor = "#C1CDC1"
+    )
+  
+  return(barras_plot1)
+}
 
 
 ```
 
-## Datos del año 2022
+```{r}
+fun_grafico_jugadores_elite_plotly(five_data15, 2015)
+```
 
 ```{r}
-fdata_22$clasificacion <- NA
-
-for (i in 1:nrow(fdata_22)) {
-    if (fdata_22$overall[i] >= 80) {
-      fdata_22$clasificacion[i] <- "Elite"
-    } else if (fdata_22$overall[i] >= 60) {
-      fdata_22$clasificacion[i] <- "Bueno"
-    } else {
-      fdata_22$clasificacion[i] <- "Promedio"
-    }
-}
-
-five_league22<-fdata_22 %>% 
-  filter(league_name %in% c("Spain Primera Division","English Premier League",                              "Italian Serie A","German 1. Bundesliga",
-                            "French Ligue 1") & clasificacion == "Elite" )
-
-ggplot(five_league22, aes(x = league_name)) + 
-  geom_bar(fill = "#ff7f0e", color = "black") + 
-  labs(title = "Distribución de jugadores Elite por liga año 2022", x = "Ligas",       y = "Número de Jugadores")+
-  scale_x_discrete(labels = c("Spain Primera Division" = "La Liga (España)",
-                              "English Premier League" = "Premier League (Inglaterra)",
-                              "Italian Serie A" = "Serie A (Italia)",
-                              "German 1. Bundesliga" = "Bundesliga (Alemania)",
-                              "French Ligue 1" = "Ligue 1 (Francia)"))+
-  theme(panel.background = element_rect(fill = "#C1CDC1"))
-
-
+fun_grafico_jugadores_elite_plotly(five_data22,2022)
 ```
+
 
 ## Comparación final
 
 ```{r message=FALSE, warning=FALSE}
-five_league21$year <- 2021 
-five_league22$year <-2022
-
-union_data <- rbind(five_league21, five_league22)
-                       
-ggplot(union_data, aes(x = league_name, fill = as.factor(year), y = ..count..)) + geom_bar(position = "dodge") + labs(title = "Comparativa de Jugadores Elite por Liga (2021 vs 2022)", x = "Ligas", y = "Número de Jugadores") + scale_x_discrete(labels = c("Spain Primera Division" = "La Liga(España)", "English Premier League" = "Premier League(Inglaterra)", "Italian Serie A" = "Serie A(Italia)", "German 1. Bundesliga" = "Bundesliga(Alemania)", "French Ligue 1" = "Ligue 1(Francia)")) + scale_fill_discrete(name = "Año") +
-scale_fill_manual(values = c("2021" = "#1f77b4", "2022" = "#ff7f0e"), name = "Año")+  
-theme(panel.background = element_rect(fill = "#C1CDC1"))                      
+# Función que crea un gráfico de barras comparativo sobre los jugadores élite por liga
+fun_grafico_comparativo_barras_plotly <- function(data1, data2, year1, year2) {
+  # Añadir la columna de año a cada conjunto de datos
+  data1$year <- as.character(year1)
+  data2$year <- as.character(year2)
+  
+  # Combinar los conjuntos de datos
+  union_data <- rbind(data1, data2)
+  
+  # Agrupar y contar el número de jugadores élite por liga y año
+  data_contada <- union_data %>%
+    group_by(league_name, year) %>%
+    summarise(n = n())
+  
+  # Crear el gráfico de barras interactivo
+  barras_plot2 <- plot_ly(
+    data = data_contada,
+    x = ~league_name,
+    y = ~n,
+    color = ~year,
+    type = 'bar',
+    text = ~paste(n),
+    textposition = 'outside',
+    hoverinfo = 'text+y'
+  ) %>%
+    layout(
+      title = paste("Comparativa de Jugadores Elite por Liga (", year1, "vs", year2, ")"),
+      xaxis = list(
+        title = "Ligas",
+        tickvals = c("Spain Primera Division", "English Premier League", "Italian Serie A", "German 1. Bundesliga", "French Ligue 1"),
+        ticktext = c("La Liga (España)", "Premier League (Inglaterra)", "Serie A (Italia)", "Bundesliga (Alemania)", "Ligue 1 (Francia)"),
+        tickangle = -45  # Rotar las etiquetas del eje x para mejor legibilidad
+      ),
+      yaxis = list(title = "Jugadores Elite"),
+      barmode = 'group',  # Agrupar las barras por año
+      plot_bgcolor = "#C1CDC1",
+      bargap = 0.2,       # Espacio entre las barras
+      bargroupgap = 0.1   # Espacio entre los grupos de barras
+    )
+  
+  return(barras_plot2)
+}                     
 ```
+
+```{r warning = FALSE, message = FALSE}
+fun_grafico_comparativo_barras_plotly(five_data15, five_data22, 2015, 2022)
+```
+
 
 # Hipotesis #3
 
 Conforme al potencial actual del jugador¿Cómo evolucionaría en la siguiente temporada?
 
+#### Habilidades de los jugadores
+Se creo una función para crear un nuevo dataframe solo con las habilidades de cada jugador 
+
 ```{r}
-#Creacion de dataframe con las habilidades de los jugadores 
-data21_habil <- fdata_21 %>% 
+#Función para crear un nuevo dataframe solo con las habilidades de cada jugador 
+fun_habilidades<- function(data){#data == al set de datos a utilizar
+ 
+  data<-data %>% #Creacion de dataframe con las habilidades de los jugadores
   select(short_name,potential, everything()[11:16])
 
 #Limpieza de los datos(Eliminancion de NA no se uso por no tener informacion sobre sus estadisticas)
-fdata21_habilidades<- data21_habil %>% 
+ data<-data %>% 
   drop_na()
-
-#Dataframe para la prediccion de los jugadores 
-fdata21_habild_predic<- fdata21_habilidades %>% 
-  select(short_name, everything()[3:8])
-
-#Ciclo con codiciones en el que se evalua el potencial del jugador 
-for (i in 1:nrow(fdata21_habilidades)) { 
-  if (fdata21_habilidades$potential[i] >= 90) { 
-    fdata21_habild_predic[i, 2:7] <- fdata21_habild_predic[i, 2:7] + 1 } 
-  else if (fdata21_habilidades$potential[i] >= 70) { 
-    fdata21_habild_predic[i, 2:7] <- fdata21_habild_predic[i, 2:7] + 2 } 
-  else if (fdata21_habilidades$potential[i] >= 60) { 
-    fdata21_habild_predic[i, 2:7] <- fdata21_habild_predic[i, 2:7] - 1 } 
-  else { fdata21_habild_predic[i, 2:7] <- fdata21_habild_predic[i, 2:7] + 0 }
+ 
+ return(data)
 }
 
-#Pesos(Valor porcentual importancia conforme a la calificacion)
-pesos <- c(pace = 0.2, shooting = 0.2, passing = 0.2, dribbling = 0.2, defending = 0.1, physic = 0.1)
 
-# Usar sapply para calcular el overall_habilidades de la tabla de habilidades"fdata21_habilidades"
-fdata21_habilidades$overall_habilidad <- sapply(1:nrow(fdata21_habilidades), function(i) {
-  sum(fdata21_habilidades[i,3:8 ] * pesos)
-})
+habilidades_15<-fun_habilidades(fdata_15)#///
+habilidades_15
 
-# Usar sapply para calcular el overall_habilidades de la tabla de prediccion "fdata21_habild_predic"
-fdata21_habild_predic$overall_habilidades <- sapply(1:nrow(fdata21_habild_predic), function(i) {
-  sum(fdata21_habild_predic[i,2:7 ] * pesos)
-})
-
-print(head(fdata21_habilidades))
-print(head(fdata21_habild_predic))
 ```
+
+#### Predicción de habilidades
+Se creo una funcion que tiene como proposito tratar de predicir las habilidades de los jugadores para la siguiente temporada 
+
+```{r}
+#2.Dataframe para la prediccion de los jugadores 
+fun_predicion_players <- function(data) {
+  data<-data %>% 
+    drop_na()
+  # Seleccionar las columnas específicas
+  data <- data %>% 
+    select(short_name, potential, pace, shooting, passing, dribbling, defending, physic)
+  
+  # Evaluar y modificar las columnas de habilidades
+  for (i in 1:nrow(data)) { 
+    if (data$potential[i] >= 90) { 
+      data[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")] <- 
+        data[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")] + 1 
+    } else if (data$potential[i] >= 70) { 
+      data[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")] <- 
+        data[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")] + 2 
+    } else if (data$potential[i] >= 60) { 
+      data[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")] <- 
+        data[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")] - 1 
+    } else { 
+      data[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")] <- 
+        data[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")] + 0 
+    }
+  }
+  
+  return(data)
+}
+
+predic_2015<-fun_predicion_players(fdata_15)
+
+head(predic_2015)
+```
+
+#### Nota general de los jugadores
+```{r}
+#3.Funcion que calcular la nota general de las habilidades de un jugador 
+fun_overall_player <- function(player, data) {
+  # Defenicion de pesos
+  pesos <- c(pace = 0.2, shooting = 0.2, passing = 0.2, dribbling = 0.2, defending = 0.1, physic = 0.1)
+  
+  # Filtrar el dataframe para obtener el jugador específico
+  solicitud <- data %>%
+    filter(short_name == player)
+  
+  if (nrow(solicitud) == 0) {
+    print("Jugador no encontrado")
+  }
+  
+  # Calcular el overall_habilidad usando sapply
+  overall_habilidad <- sapply(1:nrow(solicitud), function(i) {
+    sum(as.numeric(solicitud[i, c("pace", "shooting", "passing", "dribbling", "defending", "physic")]) * pesos)
+  })
+  
+  # Crear un dataframe con los resultados deseados
+  resultado <- data.frame( short_name = solicitud$short_name, 
+                           potential = solicitud$potential,
+                           pace = solicitud$pace,
+                           shooting = solicitud$shooting,
+                           passing = solicitud$passing,
+                           dribbling = solicitud$dribbling,
+                           defending = solicitud$defending,
+                           physic = solicitud$physic,
+                           overall_habilidad = overall_habilidad )
+  
+  return(resultado)
+}
+
+fun_overall_player("L. Messi", fdata_15)
+fun_overall_player("L. Messi", predic_2015)
+```
+
 
 #### Comparativa del desarrollo de la temporada de los jugadores
 
-```{r message=FALSE, warning=FALSE}
-#Datos de predicción del jugador L.Messi 
-messi_predic <- fdata21_habild_predic %>% 
-  slice(1) %>% 
-  select(pace, shooting, passing, dribbling, defending, physic)
+#### Graficos Radar
+Se creo esta función que tiene como proposito realizar un grafico radar recibiendo 5 parametros 
 
-#Datos del 2022 del jugador L.Messi
-messi_22<-fdata_22 %>% 
-  slice(1) %>% 
-  select(pace,shooting,passing,dribbling,defending,physic)
+player = Nombre del jugador
 
+data1 = Primer set de datos a utilizar
 
+data2 = Segundo set de datos a utilizar
 
-vect_messi <- rbind(messi_predic, messi_22)
+Year1 = Año del primer set de datos evaluado
 
-max_min <- rbind(rep(100,6 ), rep(0, 6), vect_messi)
-colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic")
+Year2 = Año del segundo set de datos evaluado
 
-
-radarchart( 
-  max_min[c(1, 2, 3, 4),], 
-  axistype = 1, 
-  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9)), 
-  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5)), 
-  plwd = 4, cglcol = "grey", 
-  cglty = 1, axislabcol = "grey", 
-  caxislabels = seq(0, 100, 20), 
-  cglwd = 0.8, vlcex = 0.8,
-  title = "Comparativa de habilidades de L.Messi en 2021 y 2022"
+```{r}
+# Función que crea un gráfico de radar interactivo
+fun_radar_doble_interactivo <- function(player, data1, data2, year1, year2) {
+  # Filtrar y seleccionar las columnas específicas para el jugador
+  data1 <- data1 %>% 
+    filter(short_name == player) %>% 
+    select(pace, shooting, passing, dribbling, defending, physic)
+  
+  data2 <- data2 %>% 
+    filter(short_name == player) %>% 
+    select(pace, shooting, passing, dribbling, defending, physic)
+  
+  # Combinar los datos y agregar años (sin la coma adicional)
+  vect_data <- rbind(
+    cbind(data1, Year = year1),
+    cbind(data2, Year = year2)
   )
+  
+  # Crear el gráfico de radar interactivo
+  radar_chart <- plot_ly(
+    type = 'scatterpolar',
+    fill = 'toself'
+  ) %>%
+    add_trace(
+      r = as.numeric(vect_data[vect_data$Year == year1, 1:6]),
+      theta = names(vect_data)[1:6],
+      name = as.character(year1)
+    ) %>%
+    add_trace(
+      r = as.numeric(vect_data[vect_data$Year == year2, 1:6]),
+      theta = names(vect_data)[1:6],
+      name = as.character(year2)
+    ) %>%
+    layout(
+      polar = list(
+        radialaxis = list(
+          visible = TRUE,
+          range = c(0, 100)
+        )
+      ),
+      title = paste("Comparativa de habilidades de", player)
+    )
+  
+  return(radar_chart)
+}
+
+```
+
+
+
+Se realizo una función la cual tiene como proposito recibir 7 parametros en donde el player es el nombre del jugador data1 al 3 es set de datos que queremos evaluar y year1 al 3 el año de la evaluación 
+```{r message=FALSE, warning=FALSE}
+# Función que crea un gráfico de radar interactivo
+fun_radar_triple_interactivo <- function(player, data1, data2, data3, year1, year2, year3) {
+  # Filtrar y seleccionar las columnas específicas para el jugador
+  data1 <- data1 %>% 
+    filter(short_name == player) %>% 
+    select(pace, shooting, passing, dribbling, defending, physic)
+  
+  data2 <- data2 %>% 
+    filter(short_name == player) %>% 
+    select(pace, shooting, passing, dribbling, defending, physic)
+  
+  data3 <- data3 %>% 
+    filter(short_name == player) %>% 
+    select(pace, shooting, passing, dribbling, defending, physic)
+  
+  # Combinar los datos y agregar años
+  vect_data <- rbind(
+    cbind(data1, Year = year1),
+    cbind(data2, Year = year2),
+    cbind(data3, Year = year3)
+  )
+  
+  # Crear el gráfico de radar interactivo
+  radar_chart <- plot_ly(
+    type = 'scatterpolar',
+    fill = 'toself'
+  ) %>%
+    add_trace(
+      r = as.numeric(vect_data[vect_data$Year == year1, 1:6]),
+      theta = names(vect_data)[1:6],
+      name = year1
+    ) %>%
+    add_trace(
+      r = as.numeric(vect_data[vect_data$Year == year2, 1:6]),
+      theta = names(vect_data)[1:6],
+      name = year2
+    ) %>%
+    add_trace(
+      r = as.numeric(vect_data[vect_data$Year == year3, 1:6]),
+      theta = names(vect_data)[1:6],
+      name = year3
+    ) %>%
+    layout(
+      polar = list(
+        radialaxis = list(
+          visible = TRUE,
+          range = c(0, 100)
+        )
+      ),
+      title = paste("Comparativa de habilidades de", player)
+    )
+  
+  return(radar_chart)
+}
 
                  
 ```
 
-## Jugador Lucas Moura
-
-```{r}
-#Datos de predicción del jugador Lucas Moura 
-  moura_predic <- fdata21_habild_predic %>% 
-    filter(short_name == "Lucas Moura") %>% 
-    select(pace, shooting, passing, dribbling, defending, physic)
-  
-  #Datos del 2022 del jugador Lucas Moura
-  moura_2022<-fdata_22 %>% 
-    filter(short_name == "Lucas Moura") %>% 
-    select(pace, shooting, passing, dribbling, defending, physic)
-  
-  #Grafico de radar
-  vect_moura <- rbind(moura_predic, moura_2022)
-  
-  max_min <- rbind(rep(100, 6), rep(0, 6), vect_moura)
-  colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic")
-  
-  
-  radarchart( 
-    max_min[c(1, 2, 3, 4),], 
-    axistype = 1, 
-    pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9)), 
-    pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5)), 
-    plwd = 4, cglcol = "grey", 
-    cglty = 1, axislabcol = "grey", 
-    caxislabels = seq(0, 100, 20), 
-    cglwd = 0.8, vlcex = 0.8,
-    title = "Comparativa de habilidades de Lucas Moura en 2021 y 2022"
-  )
-  
-  
+## Desarrollo Sadio Mané
+#### Sadio Mané desarrollo años 2015 y 2022
+```{r warning = FALSE, message = FALSE}
+fun_radar_doble_interactivo("S. Mané", fdata_22, fdata_15, 2022, 2015)
 ```
 
-#### Lucas Moura desarrollo años 2015,2021 y 2022
+#### Sadio Mané desarrollo años 2015,2021 y 2022
 
-```{r}
-moura_2015 <- origi_data15 %>% 
-  filter(long_name == "Lucas Rodrigues Moura da Silva") %>% 
-  select(pace, shooting, passing, dribbling, defending, physic)
-
-vect_moura_t <- rbind(moura_predic, moura_2022, moura_2015) 
-
-max_min <- rbind(rep(100, 6), rep(0, 6), vect_moura_t)
-colnames(max_min) <- colnames(vect_moura_t)
-
-radarchart( 
-  max_min[c(1, 2, 3, 4, 5),], 
-  axistype = 1, 
-  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9), rgb(0.2, 0.7, 0.3, 0.9)), 
-  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5), rgb(0.2, 0.7, 0.3, 0.5)), 
-  plwd = 4, 
-  cglcol = "grey", 
-  cglty = 1, 
-  axislabcol = "grey", 
-  caxislabels = seq(0, 100, 20), 
-  cglwd = 0.8, 
-  vlcex = 0.8,
-  title = "Comparativa de habilidades de Lucas Moura en 2015-2022"
-)
-```
-
-## Jugador Sadio Mane
-
-```{r}
-#Datos de predicción del jugador Sadio Mané
-mane_predic <- fdata21_habild_predic %>% 
-  filter(short_name == "S. Mané") %>% 
-  select(pace, shooting, passing, dribbling, defending, physic)
-
-#Datos del 2022 del jugador Sadio Mané
-mane_2022<-fdata_22 %>% 
-  filter(short_name == "S. Mané") %>% 
-  select(pace, shooting, passing, dribbling, defending, physic)
-
-#Grafico de radar
-vect_mane <- rbind(mane_predic, mane_2022)
-
-max_min <- rbind(rep(100, 6), rep(0, 6), vect_mane)
-colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic")
-
-
-radarchart( 
-  max_min[c(1, 2, 3, 4),], 
-  axistype = 1, 
-  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9)), 
-  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5)), 
-  plwd = 4, cglcol = "grey", 
-  cglty = 1, axislabcol = "grey", 
-  caxislabels = seq(0, 100, 20), 
-  cglwd = 0.8, vlcex = 0.8,
-  title = "Comparativa de habilidades de S. Mané en 2021 y 2022"
-)
+```{r warning = FALSE, message = FALSE}
+fun_radar_triple_interactivo("S. Mané", fdata_22, fdata_21, fdata_15, 2022, 2021, 2015)
 
 ```
+## Desarrollo Virgil van Dijk
 
-#### Sadio Mane desarrollo años 2015,2021 y 2022
-
-```{r}
-mane_2015 <- origi_data15 %>% 
-  filter(short_name == "S. Mané") %>% 
-  select(pace, shooting, passing, dribbling, defending, physic)
-
-vect_mane_t <- rbind(mane_predic, mane_2022, mane_2015) 
-
-max_min <- rbind(rep(100, 6), rep(0, 6), vect_mane_t)
-colnames(max_min) <- colnames(vect_mane_t)
-
-radarchart( 
-  max_min[c(1, 2, 3, 4, 5),], 
-  axistype = 1, 
-  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9), rgb(0.2, 0.7, 0.3, 0.9)), 
-  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5), rgb(0.2, 0.7, 0.3, 0.5)), 
-  plwd = 4, 
-  cglcol = "grey", 
-  cglty = 1, 
-  axislabcol = "grey", 
-  caxislabels = seq(0, 100, 20), 
-  cglwd = 0.8, 
-  vlcex = 0.8,
-  title = "Comparativa de habilidades de S. Mané en 2015-2022"
-)
+#### Virgil van Dijk desarrollo años 2015 y 2022
+```{r warning = FALSE, message = FALSE}
+fun_radar_doble_interactivo("V. van Dijk", fdata_22, fdata_15, 2022, 2015)
 ```
 
-## Jugador Virgil van Dijk
-
-```{r}
-#Datos de predicción del jugador Virgil van Dijk
-vanD_predic <- fdata21_habild_predic %>% 
-  filter(short_name == "V. van Dijk") %>% 
-  select(pace, shooting, passing, dribbling, defending, physic)
-
-#Datos del 2022 del jugador Virgil van Dijk
-vanD_2022<-fdata_22 %>% 
-  filter(short_name == "V. van Dijk") %>% 
-  select(pace, shooting, passing, dribbling, defending, physic)
-
-#Grafico de radar
-vect_vanD <- rbind(vanD_predic, vanD_2022)
-
-max_min <- rbind(rep(100, 6), rep(0, 6), vect_vanD)
-colnames(max_min) <- c("pace", "shooting", "passing", "dribbling", "defending", "physic")
-
-
-radarchart( 
-  max_min[c(1, 2, 3, 4),], 
-  axistype = 1, 
-  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9)), 
-  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5)), 
-  plwd = 4, cglcol = "grey", 
-  cglty = 1, axislabcol = "grey", 
-  caxislabels = seq(0, 100, 20), 
-  cglwd = 0.8, vlcex = 0.8,
-  title = "Comparativa de habilidades de Virgil van Dijk en 2021 y 2022"
-)   
-
-```
 
 #### Virgil van Dijk desarrollo años 2015,2021 y 2022
 
-```{r}
-vanD_2015 <- origi_data15 %>% 
-  filter(short_name == "V. van Dijk") %>% 
-  select(pace, shooting, passing, dribbling, defending, physic)
+```{r warning = FALSE, message = FALSE}
+fun_radar_triple_interactivo("V. van Dijk", fdata_22, fdata_21, fdata_15, 2022, 2021, 2015)
 
-vect_vanD_t <- rbind(vanD_predic, vanD_2022, vanD_2015) 
-
-max_min <- rbind(rep(100, 6), rep(0, 6), vect_vanD_t)
-colnames(max_min) <- colnames(vect_vanD_t)
-
-radarchart( 
-  max_min[c(1, 2, 3, 4, 5),], 
-  axistype = 1, 
-  pcol = c(rgb(0.2, 0.5, 0.5, 0.9), rgb(0.8, 0.2, 0.2, 0.9), rgb(0.2, 0.7, 0.3, 0.9)), 
-  pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.2, 0.5), rgb(0.2, 0.7, 0.3, 0.5)), 
-  plwd = 4, 
-  cglcol = "grey", 
-  cglty = 1, 
-  axislabcol = "grey", 
-  caxislabels = seq(0, 100, 20), 
-  cglwd = 0.8, 
-  vlcex = 0.8,
-  title = "Comparativa de habilidades de Virgil van Dijk en 2015-2022"
-)
 ```
 
-# Otros graficos 
-```{r}
-#PIE HABIL de los jugadores del 2022
-pie_count22 <- fdata_22 %>% 
-  group_by(preferred_foot) %>% 
-  summarise(count = n()) %>% 
-  mutate(percentage = round(100 * count / sum(count), 1))
-
-#Grafico pastal datos del 2022
-plot_pie22 <- ggplot(pie_count22, aes(x = "", y = count, fill = preferred_foot)) + 
-  geom_bar(stat = "identity", width = 1) + 
-  coord_polar(theta = "y") + 
-  ggtitle("Distribución de Jugadores por Pie hábil(2022)") +
-  theme_void() + 
-  scale_fill_brewer(palette = "PuBuGn") + 
-  geom_text(aes(label = paste0(percentage, "%")), position = position_stack(vjust = 0.5), size = 5)
-
-#Pie habil de los jugadores del 2015
-pie_count15 <- origi_data15 %>% 
-  group_by(preferred_foot) %>% 
-  summarise(count = n()) %>% 
-  mutate(percentage = round(100 * count / sum(count), 1))
-
-#Grafico pastel datos del 2015
-plot_pie15 <- ggplot(pie_count15, aes(x = "", y = count, fill = preferred_foot)) + 
-  geom_bar(stat = "identity", width = 1) + 
-  coord_polar(theta = "y") + 
-  ggtitle("Distribución de Jugadores por Pie hábil(2015)") +
-  theme_void() + 
-  scale_fill_brewer(palette = "PuBuGn") + 
-  geom_text(aes(label = paste0(percentage, "%")), position = position_stack(vjust = 0.5), size = 5)
-
-#Combinacion de los graficos
-combined_plotff <- grid.arrange(plot_pie15, plot_pie22, ncol = 2)
+## Desarrollo N'Golo Kanté
+#### Virgil van Dijk desarrollo años 2015 y 2022
+```{r warning = FALSE, message = FALSE}
+fun_radar_doble_interactivo('N. Kanté',fdata_22,fdata_15,2022,2015)
 ```
+
+#### N'Golo Kanté desarrollo años 2015,2021 y 2022
+```{r warning = FALSE, message = FALSE}
+fun_radar_triple_interactivo('N. Kanté',fdata_22,fdata_21,fdata_15,2022,2021,2015)
+```
+
+
+# Otros graficos
+#### Pie habil de los jugadores
+
+```{r}
+# Crear el gráfico de pastel interactivo
+fun_preferred_foot_pie<-function(data1,year){
+data_count1<-data1 %>%
+  group_by(preferred_foot) %>% 
+  count(preferred_foot)
+
+pastel_chart <- plot_ly(
+  data = data_count1,
+  labels = ~preferred_foot,
+  values = ~n,
+  type = 'pie',
+  textinfo = 'label+percent',
+  insidetextorientation = 'radial',
+  marker = list(colors = c( "#79CDCD", "#BC8F8F"))
+) %>%
+  layout(
+    title = paste("Distribución pie habil año", year)
+  )
+return(pastel_chart)
+}
+
+```
+
+
+```{r}
+fun_preferred_foot_pie(fdata_15,2015)
+```
+
 
 
 
