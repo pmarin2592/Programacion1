@@ -27,7 +27,7 @@ output:
 
 ### **Docente:** Ericka Celina Valverde Navarro
 
-### Fecha presentación de investigación:
+### Fecha presentación de investigación: 19 noviembre 2024
 
 # Librerias
 
@@ -39,7 +39,7 @@ library(ggplot2)#creación de gráficos
 library(tidyr)#Limpieza de datos
 library(fmsb)#gráficos de radar etc
 library(gridExtra)#Combinar los gráficos
-library(plotly)
+library(plotly)#Graficos interactivos
 ```
 
 # Set de Datos
@@ -55,9 +55,10 @@ origi_data15<-read_csv("players_15.csv", col_names = TRUE)
 
 ### Selección de columnas necesarias:
 
-Esta función busca las columnas necesarias del dataset original y crea uno nuevo y le agrega una columna nueva de clasificación
 
 ```{r message=FALSE, warning=FALSE}
+#Esta función busca las columnas necesarias del dataset original y crea uno nuevo y le agrega una columna nueva de clasificación
+
 fun_dataNecesaria <- function(data) { # Seleccionar columnas deseadas
   data <- data[, c("short_name", "player_positions", "overall", "potential",
                    "value_eur", "age", "club_name", "league_name", "nationality_name",
@@ -109,7 +110,7 @@ sapply(fdata_22, function(x) sum(is.na(x)))# Contar valores NA por columna
 
 #### Data y dimenciones:
 
-Tablas de los set de datos utilizados años (2021-2022)
+Tablas de los set de datos utilizados años
 
 ```{r}
 fdata_21
@@ -127,9 +128,11 @@ dim(fdata_15)
 ¿Cuál es la mayor conformación de jugadores "Elite" en las 5 grandes ligas?
 
 ## Datos de las 5 grandes ligas 
-Esta función reune la información de las que consideramos las 5 grandes ligas Spain Primera Division,Premier League, Serie A,Bundesliga,Ligue 1
+
 
 ```{r}
+#Esta función reune la información de las que consideramos las 5 grandes ligas Spain Primera Division,Premier League, Serie A,Bundesliga,Ligue 1
+
 #Datos de las 5 grandes ligas/ Funcion que busca datos de las 5 grandes ligas 
 fun_best_league<-function(data){
   result_five<-data %>% 
@@ -174,7 +177,7 @@ fun_grafico_jugadores_elite_plotly <- function(data_final, year) {
         title = "Ligas",
         tickvals = c("Spain Primera Division", "English Premier League", "Italian Serie A", "German 1. Bundesliga", "French Ligue 1"),
         ticktext = c("La Liga (España)", "Premier League (Inglaterra)", "Serie A (Italia)", "Bundesliga (Alemania)", "Ligue 1 (Francia)"),
-        tickangle = -45  # Rotar las etiquetas del eje x para mejor legibilidad
+        tickangle = -45  
       ),
       yaxis = list(title = "Número de Jugadores"),
       plot_bgcolor = "#C1CDC1"
@@ -229,13 +232,13 @@ fun_grafico_comparativo_barras_plotly <- function(data1, data2, year1, year2) {
         title = "Ligas",
         tickvals = c("Spain Primera Division", "English Premier League", "Italian Serie A", "German 1. Bundesliga", "French Ligue 1"),
         ticktext = c("La Liga (España)", "Premier League (Inglaterra)", "Serie A (Italia)", "Bundesliga (Alemania)", "Ligue 1 (Francia)"),
-        tickangle = -45  # Rotar las etiquetas del eje x para mejor legibilidad
+        tickangle = -45  
       ),
       yaxis = list(title = "Jugadores Elite"),
-      barmode = 'group',  # Agrupar las barras por año
+      barmode = 'group',  
       plot_bgcolor = "#C1CDC1",
-      bargap = 0.2,       # Espacio entre las barras
-      bargroupgap = 0.1   # Espacio entre los grupos de barras
+      bargap = 0.2,       
+      bargroupgap = 0.1   
     )
   
   return(barras_plot2)
@@ -246,13 +249,15 @@ fun_grafico_comparativo_barras_plotly <- function(data1, data2, year1, year2) {
 fun_grafico_comparativo_barras_plotly(five_data15, five_data22, 2015, 2022)
 ```
 
+# Hipotesis #2
+
+
 
 # Hipotesis #3
 
 Conforme al potencial actual del jugador¿Cómo evolucionaría en la siguiente temporada?
 
 #### Habilidades de los jugadores
-Se creo una función para crear un nuevo dataframe solo con las habilidades de cada jugador 
 
 ```{r}
 #Función para crear un nuevo dataframe solo con las habilidades de cada jugador 
@@ -275,9 +280,9 @@ habilidades_15
 ```
 
 #### Predicción de habilidades
-Se creo una funcion que tiene como proposito tratar de predicir las habilidades de los jugadores para la siguiente temporada 
 
 ```{r}
+#Se creo una funcion que tiene como proposito tratar de predicir las habilidades de los jugadores para la siguiente temporada
 #2.Dataframe para la prediccion de los jugadores 
 fun_predicion_players <- function(data) {
   data<-data %>% 
@@ -353,19 +358,20 @@ fun_overall_player("L. Messi", predic_2015)
 #### Comparativa del desarrollo de la temporada de los jugadores
 
 #### Graficos Radar
-Se creo esta función que tiene como proposito realizar un grafico radar recibiendo 5 parametros 
-
-player = Nombre del jugador
-
-data1 = Primer set de datos a utilizar
-
-data2 = Segundo set de datos a utilizar
-
-Year1 = Año del primer set de datos evaluado
-
-Year2 = Año del segundo set de datos evaluado
 
 ```{r}
+#Se creo esta función que tiene como proposito realizar un grafico radar recibiendo 5 parametros 
+
+#player = Nombre del jugador
+
+#data1 = Primer set de datos a utilizar
+
+#data2 = Segundo set de datos a utilizar
+
+#Year1 = Año del primer set de datos evaluado
+
+#Year2 = Año del segundo set de datos evaluado
+
 # Función que crea un gráfico de radar interactivo
 fun_radar_doble_interactivo <- function(player, data1, data2, year1, year2) {
   # Filtrar y seleccionar las columnas específicas para el jugador
@@ -377,7 +383,7 @@ fun_radar_doble_interactivo <- function(player, data1, data2, year1, year2) {
     filter(short_name == player) %>% 
     select(pace, shooting, passing, dribbling, defending, physic)
   
-  # Combinar los datos y agregar años (sin la coma adicional)
+  # Combinar los datos y agregar años 
   vect_data <- rbind(
     cbind(data1, Year = year1),
     cbind(data2, Year = year2)
@@ -415,8 +421,9 @@ fun_radar_doble_interactivo <- function(player, data1, data2, year1, year2) {
 
 
 
-Se realizo una función la cual tiene como proposito recibir 7 parametros en donde el player es el nombre del jugador data1 al 3 es set de datos que queremos evaluar y year1 al 3 el año de la evaluación 
 ```{r message=FALSE, warning=FALSE}
+#Se realizo una función la cual tiene como proposito recibir 7 parametros en donde el player es el nombre del jugador data1 al 3 es set de datos que queremos evaluar y year1 al 3 el año de la evaluación 
+
 # Función que crea un gráfico de radar interactivo
 fun_radar_triple_interactivo <- function(player, data1, data2, data3, year1, year2, year3) {
   # Filtrar y seleccionar las columnas específicas para el jugador
@@ -475,19 +482,19 @@ fun_radar_triple_interactivo <- function(player, data1, data2, data3, year1, yea
                  
 ```
 
-## Desarrollo Sadio Mané
-#### Sadio Mané desarrollo años 2015 y 2022
+## Desarrollo Lionel Messi (Delantero)
+#### Lionel Andrés Messi desarrollo años 2015 y 2022
 ```{r warning = FALSE, message = FALSE}
-fun_radar_doble_interactivo("S. Mané", fdata_22, fdata_15, 2022, 2015)
+fun_radar_doble_interactivo("L. Messi", fdata_22, fdata_15, 2022, 2015)
 ```
 
-#### Sadio Mané desarrollo años 2015,2021 y 2022
+#### Lionel Messi desarrollo años 2015,2021 y 2022
 
 ```{r warning = FALSE, message = FALSE}
-fun_radar_triple_interactivo("S. Mané", fdata_22, fdata_21, fdata_15, 2022, 2021, 2015)
+fun_radar_triple_interactivo("L. Messi", fdata_22, fdata_21, fdata_15, 2022, 2021, 2015)
 
 ```
-## Desarrollo Virgil van Dijk
+## Desarrollo Virgil van Dijk (Defensa)
 
 #### Virgil van Dijk desarrollo años 2015 y 2022
 ```{r warning = FALSE, message = FALSE}
@@ -502,16 +509,18 @@ fun_radar_triple_interactivo("V. van Dijk", fdata_22, fdata_21, fdata_15, 2022, 
 
 ```
 
-## Desarrollo N'Golo Kanté
-#### Virgil van Dijk desarrollo años 2015 y 2022
+## Desarrollo Kevin De Bruyne(mediocampista)
+#### Kevin De Bruyne desarrollo años 2015 y 2022
 ```{r warning = FALSE, message = FALSE}
-fun_radar_doble_interactivo('N. Kanté',fdata_22,fdata_15,2022,2015)
+fun_radar_doble_interactivo('K. De Bruyne',fdata_22,fdata_15,2022,2015)
 ```
 
-#### N'Golo Kanté desarrollo años 2015,2021 y 2022
+#### Kevin De Bruyne desarrollo años 2015,2021 y 2022
 ```{r warning = FALSE, message = FALSE}
-fun_radar_triple_interactivo('N. Kanté',fdata_22,fdata_21,fdata_15,2022,2021,2015)
+fun_radar_triple_interactivo('K. De Bruyne',fdata_22,fdata_21,fdata_15,2022,2021,2015)
 ```
+
+# Hipotesis #4
 
 
 # Otros graficos
@@ -545,6 +554,7 @@ return(pastel_chart)
 ```{r}
 fun_preferred_foot_pie(fdata_15,2015)
 ```
+
 
 
 
