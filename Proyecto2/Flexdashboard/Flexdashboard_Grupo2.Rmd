@@ -6,6 +6,9 @@ css: styles.css
 ---
 
 ```{r setup, include=FALSE}
+# Establecer un repositorio CRAN
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+
 ipak <- function(pkg){ # funcion para instalar paquetes
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg)) 
@@ -13,7 +16,7 @@ ipak <- function(pkg){ # funcion para instalar paquetes
   sapply(pkg, require, character.only = TRUE)
 }
 librerias <- c("dplyr","shiny","flexdashboard","leaflet","plotly","DT","readxl",
-               "scales","rnaturalearth","leaflet","rnaturalearthdata","sf")
+               "scales","rnaturalearth","rnaturalearthdata","sf")
 ipak(librerias)
 
 # Especifica la ruta del archivo
