@@ -1,0 +1,321 @@
+---
+title: "Resumen Interactivo posiciones por año"
+output: flexdashboard::flex_dashboard
+runtime: shiny
+css: styles.css
+---
+
+```{r setup, include=FALSE}
+# Establecer un repositorio CRAN
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+
+ipak <- function(pkg){ # funcion para instalar paquetes
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+librerias <- c("dplyr","shiny","flexdashboard","leaflet","plotly","DT","readxl",
+               "scales","rnaturalearth","rnaturalearthdata","sf","openxlsx",
+               "shinyjs","tinytex")
+ipak(librerias)
+
+# Especifica la ruta del archivo
+archivo <- "datasetComplet.xlsx"
+
+# Lee los nombres de las hojas en el archivo
+hojas <- excel_sheets(archivo)
+
+# Crea una lista para almacenar los datos de cada hoja
+datos <- lapply(hojas, function(hoja) {
+  read_excel(archivo, sheet = hoja)
+})
+
+# Nombra cada elemento de la lista con el nombre de la hoja correspondiente
+names(datos) <- hojas
+
+```
+
+Gráficos 1
+=======================================================================
+
+### Filtros y Estadística
+```{r}
+posiciones_df <- data.frame(
+  codigo = c("GK", "SW", "CB", "LCB", "RCB", "LB", "RB", "LWB", "RWB", "CDM", "LDM", "RDM",
+             "CM", "LCM", "RCM", "CAM", "LAM", "RAM", "LM", "RM", "LW", "RW", "CF", "ST", 
+             "LF", "RF", "SS", "WF", "MF", "CB", "RB", "CB", "LB", "LM", "LB", "RM", "RB"),
+  nombre = c("Portero", "Líbero", "Defensa Central", "Defensa Central Izquierdo", 
+             "Defensa Central Derecho", "Lateral Izquierdo", "Lateral Derecho", 
+             "Lateral Izquierdo Ofensivo", "Lateral Derecho Ofensivo", 
+             "Mediocampista Defensivo", "Mediocampista Defensivo Izquierdo", 
+             "Mediocampista Defensivo Derecho", "Centrocampista", "Centrocampista Izquierdo", 
+             "Centrocampista Derecho", "Mediocampista Ofensivo", "Mediocampista Ofensivo Izquierdo", 
+             "Mediocampista Ofensivo Derecho", "Mediocampista Izquierdo", 
+             "Mediocampista Derecho", "Extremo Izquierdo", "Extremo Derecho", 
+             "Delantero Centro", "Delantero", "Delantero Izquierdo", "Delantero Derecho", 
+             "Segundo Delantero", "Wing Forward", "Mediocampista", 
+             "Defensa Central", "Lateral Derecho", "Defensa Central", 
+             "Lateral Izquierdo", "Mediocampista Izquierdo", "Lateral Izquierdo", 
+             "Mediocampista Derecho", "Lateral Derecho")
+)
+
+cmd_posiciones  <- setNames(as.list(posiciones_df$codigo), posiciones_df$nombre)
+
+# Filtros interactivos
+selectInput("Anio", "Seleccione un Año:", 
+            choices = c(2015,2016,2017,2018,2019,2020,2021,2022))
+
+selectInput("Posicion", "Seleccione una Posición:", 
+            choices = cmd_posiciones)
+
+# Crear botón de descarga
+downloadButton("descargar_posiciones", "Descargar CSV Posiciones")
+```
+
+```{r include=FALSE}
+
+datos_filtrados <- reactive({
+  switch (input$Anio,
+  "2015" =df <- datos$`FIFA 15`,
+  "2016" =df <- datos$`FIFA 16`,
+  "2017" =df <- datos$`FIFA 17`,
+  "2018" =df <- datos$`FIFA 18`,
+  "2019" =df <- datos$`FIFA 19`,
+  "2020" =df <- datos$`FIFA 20`,
+  "2021"=df <- datos$`FIFA 21`,
+  "2022" =df <- datos$`FIFA 22`
+)
+  
+  df<- df[grepl(input$Posicion,df$player_positions, ignore.case = TRUE),]
+  
+  #df<- na.omit(df %>% select(short_name, player_positions, overall, 
+  #                                potential, age, height_cm, weight_kg, 
+  #                                club_name, league_name, preferred_foot, 
+  #                                value_eur)) 
+  df
+})
+```
+
+
+```{r}
+# Server: lógica para descargar el archivo
+  output$descargar_posiciones <- downloadHandler(
+    filename = function() {
+      "posiciones.csv"  # Nombre del archivo
+    },
+    content = function(file) {
+      write.csv(datos_filtrados(), file, row.names = FALSE)
+    }
+  )
+
+```
+## **Column {.sidebar data-width=4}**
+### **Tabla Interactiva con DT**
+
+```{r}
+
+# Selecciona solo las columnas que deseas mostrar
+renderDT({
+  datatable(datos_filtrados()[, c("short_name", "overall", "potential", "age", "club_name")])
+})
+
+  
+```
+### **Gráfico Potencial vs Precio**
+
+```{r}
+
+
+renderPlotly(
+  {
+    
+    p <- ggplot(datos_filtrados(), aes(x = potential, y = wage_eur)) +
+            geom_point(color = "steelblue") +  # Esto agrega puntos de color
+            labs(x = "Potential", y = "Wage EUR", title = "Potential & Wage") +
+             theme_minimal(base_size = 15) +     # Tema minimalista y tamaño base de texto
+              theme(plot.title = element_text(size = 18, hjust = 0.5)) + # Tamaño del título y centrado
+       scale_y_continuous(labels = label_number(scale = 1, big.mark = ","))  # Formato legible para el eje y
+    # Convertir el gráfico en interactivo con plotly
+      interactive_plot <- ggplotly(p, tooltip = "text")
+
+  }
+)
+
+```
+
+## 
+### **Gráfico Interactivo con Plotly**
+```{r}
+ renderPlotly({
+   # Crear el gráfico de dispersión con Plotly
+plot_ly(datos_filtrados(), x = ~height_cm, y = ~potential, type = 'scatter', mode = 'markers',
+        marker = list(color = 'steelblue', opacity = 0.6)) %>%
+  layout(
+    title = "Relacion entre la altura y el pontencial",
+    xaxis = list(title = "Altura"),
+    yaxis = list(title = "Potencial")
+  )
+ })
+```
+
+### **Gráfico ggplot**
+
+```{r}
+
+
+renderPlotly(
+  {
+    top_players <- datos_filtrados()[order(- datos_filtrados()$potential), ][1:15, ]
+    p <- ggplot(top_players, aes(x = overall, y = age, text = short_name)) +
+    geom_point() +
+      labs(title = "Overall vs Edad TOP 15",
+           x = "Overall",
+           y = "Edad") +
+      theme_minimal()
+    # Convertir el gráfico en interactivo con plotly
+      interactive_plot <- ggplotly(p, tooltip = "text")
+
+  }
+)
+
+```
+
+Gráficos 2
+=======================================================================
+##
+### **Distribución de salarios en euros**
+
+```{r}
+
+
+renderPlotly(
+  {
+    
+    p <-ggplot(datos_filtrados(), aes(x = wage_eur)) +
+        geom_histogram(binwidth = 10000, fill = "skyblue", color = "black") +
+        labs(title = "Distribución de salarios en euros", x = "Salario", y = "Conteo Jugadores") +
+        theme_minimal()+
+      scale_x_continuous(labels = label_number(scale = 1, big.mark = ","))
+    # Convertir el gráfico en interactivo con plotly
+      interactive_plot <- ggplotly(p, tooltip = "text")
+
+  }
+)
+
+```
+
+### **Distribución de edades de los jugadores**
+
+```{r}
+
+
+renderPlotly(
+  {
+    
+    p <- ggplot(datos_filtrados(), aes(x = age)) +
+          geom_histogram(binwidth = 1, fill = "salmon", color = "black") +
+          labs(title = "Distribución de edades de los jugadores", x = "Edad Jugadores", y = "Conteo Jugadores") +
+          theme_minimal()+
+      scale_y_continuous(labels = label_number(scale = 1, big.mark = ","))
+    # Convertir el gráfico en interactivo con plotly
+      interactive_plot <- ggplotly(p, tooltip = "text")
+
+  }
+)
+
+```
+
+##
+### **Distribución de alturas**
+
+```{r}
+
+
+renderPlotly(
+  {
+    
+    p <- ggplot(datos_filtrados(), aes(x = height_cm)) +
+          geom_histogram(aes(y = ..density..), binwidth = 5, fill = "lightgreen", color = "black") +
+          geom_density(color = "darkgreen") +
+          labs(title = "Distribución de alturas de los jugadores", x = "Altura en centimeros", y = "Densidad") +
+          theme_minimal()
+    # Convertir el gráfico en interactivo con plotly
+      interactive_plot <- ggplotly(p, tooltip = "text")
+
+  }
+)
+
+```
+
+### **Distribución de pesos**
+
+```{r}
+
+
+renderPlotly(
+  {
+    
+    p <- ggplot(datos_filtrados(), aes(x = weight_kg)) +
+            geom_histogram(aes(y = ..density..), binwidth = 5, fill = "lightcoral", color = "black") +
+            geom_density(color = "darkred") +
+            labs(title = "Distribución de pesos de los jugadores", x = "Peso en kg", y = "Densidad") +
+            theme_minimal()
+    # Convertir el gráfico en interactivo con plotly
+      interactive_plot <- ggplotly(p, tooltip = "text")
+
+  }
+)
+
+```
+
+Mapa
+=======================================================================
+##
+### **Mapa**
+```{r}
+datos_mapas <- reactive({
+  # Calcula la cantidad de jugadores por país
+  dataset_resumido <- datos_filtrados() %>%
+    group_by(nationality_name) %>%
+    summarise(cantidad_jugadores = n()) %>%
+    ungroup()
+
+  # Obtén las coordenadas de los países usando 'rnaturalearth'
+  countries_data <- ne_countries(scale = "medium", returnclass = "sf")
+  
+  # Une el dataset con los datos de coordenadas
+  dataset_resumido <- dataset_resumido %>%
+    left_join(countries_data %>%
+                select(name, geometry) %>%
+                rename(nationality_name = name), by = "nationality_name") %>%
+    filter(!is.na(geometry))  # Filtra países sin coordenadas válidas
+
+  # Extrae las coordenadas del centro de cada país
+  dataset_resumido <- dataset_resumido %>%
+    mutate(
+      latitude = st_coordinates(st_centroid(geometry))[, 2],
+      longitude = st_coordinates(st_centroid(geometry))[, 1]
+    ) %>%
+    filter(!is.na(latitude) & !is.na(longitude))  # Filtra filas con coordenadas válidas
+
+  # Crear un popup que muestre el país y la cantidad de jugadores
+  dataset_resumido <- dataset_resumido %>%
+    mutate(popup_info = paste0(nationality_name, ": ", cantidad_jugadores, " jugadores"))
+  
+  dataset_resumido
+})
+
+renderLeaflet(leaflet(data = datos_mapas()) %>%
+  addTiles() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addCircleMarkers(
+    ~longitude, ~latitude,
+    radius = ~sqrt(cantidad_jugadores) * 2,  # Ajusta el tamaño del círculo según la cantidad
+    popup = ~popup_info,
+    color = "blue",
+    fillOpacity = 0.6
+  ))
+```
+
+
