@@ -1,0 +1,36 @@
+body {
+    background-image: url("fonfifa.jpg");
+    background-size: cover; /* Ajusta la imagen para que cubra toda la pantalla */
+    background-attachment: fixed; /* La imagen se mantiene fija al hacer scroll */
+    background-position: center; /* Centra la imagen en el fondo */
+  }
+  
+  /* Opcional: Ajuste para los paneles de cada gráfico */
+.section.level2 {
+    background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco semitransparente */
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+h3, label {
+    color: #333333; /* Cambia el color del texto a un gris oscuro */
+    font-weight: bold; /* Opcional: hacer el texto en negrita */
+  }
+
+  /* Cambia el color de fondo de la barra de navegación */
+.navbar {
+    background-color: #004080; /* Cambia este color a tu preferencia */
+  }
+
+  /* Cambia el color del texto de los elementos de la barra de navegación */
+.navbar .navbar-brand,
+.navbar .navbar-nav > li > a {
+    color: #ffffff !important; /* Cambia este color a tu preferencia */
+  }
+
+  /* Cambia el color de fondo del elemento activo en la barra de navegación */
+.navbar .navbar-nav > li.active > a,
+.navbar .navbar-nav > li > a:hover {
+    background-color: #002060; /* Cambia este color a tu preferencia */
+    color: #ffffff !important;
+  }

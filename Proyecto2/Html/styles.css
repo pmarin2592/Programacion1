@@ -1,140 +1,351 @@
+
 * {
+
     margin: 0;
+
     padding: 0;
+
     box-sizing: border-box;
-  }  
 
-  body {
-    font-family: "Lato", sans-serif;
-    transition: background-color .5s;
-    background-color: #fcf7f7;
-    width: auto;
-    height: auto;
-    flex-direction: column;
-  }
-  
-  .sidenav {
+}
+
+
+/* Estilos básicos del cuerpo de la página */
+
+body {
+    background-image: url('fonfifa.jpg'); /* Imagen de fondo */
+    background-size: cover; /* Asegura que la imagen cubra toda la pantalla */
+    background-position: center; /* Centra la imagen de fondo */
+    background-attachment: fixed; /* Hace que la imagen se quede fija al hacer scroll */
+
+}
+/* Menú lateral (sidenav) oculto inicialmente */
+
+.sidenav {
+
     height: 100%;
+
     width: 0;
+
     position: fixed;
-    z-index: 1;
+
+    z-index: 2;
+
     top: 0;
+
     left: 0;
-    background-color: #111;
+
+    background-color: #1a1a2e;
+
     overflow-x: hidden;
-    transition: 0.5s;
+
+    transition: width 0.5s;
+
     padding-top: 60px;
-  }
-  
-  .sidenav a {
-    padding: 8px 8px 8px 32px;
+
+}
+
+/* Estilo para los enlaces dentro del sidenav */
+
+.sidenav a {
+
+    padding: 10px 30px;
+
     text-decoration: none;
-    font-size: 25px;
-    color: #818181;
+
+    font-size: 22px;
+
+    color: #bbb;
+
     display: block;
-    transition: 0.3s;
-  }
-  
-  .sidenav a:hover {
-    color: #f1f1f1;
-  }
-  
-  .sidenav .closebtn {
-    position: absolute;
-    top: 0;
-    right: 25px;
-    font-size: 36px;
-    margin-left: 50px;
-  }
-  
-  #main {
-    align-items: center;
-    transition: margin-left .5s;
-    padding: 16px;
-    background-color: #101cc0;
-  }
-  
-  @media screen and (max-height: 450px) {
-    .sidenav {padding-top: 15px;}
-    .sidenav a {font-size: 18px;}
-  }
 
-  /* Contenido principal centrado */
- .main-content {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    align-items: stretch;
-    text-align: center;
-    margin: 0;
-    padding: 0;
- }
+    transition: color 0.3s;
 
- main {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin: 40px 10%;
-  }
-
- .content {
-  max-width: 600px;
 }
 
+/* Cambio de color y estilo de los enlaces al hacer hover */
 
- #main-data #main-iframe{
-    transition: margin-left .5s;
-    padding: 16px;
- }
+.sidenav a:hover {
 
- /* Estilo del iframe para ocupar toda la pantalla */
- iframe {
-    width: 100%;
-    height: 90vh; /* Altura completa de la pantalla */
-    border: none;
- } 
-
- footer {
     color: #fff;
-    text-align: center; 
-    background-color: #101cc0;
+
+    background-color: #0f3460;
+
+    border-left: 4px solid #e94560;
+
 }
 
-/* Sección de Contenido */
-.content-box {
-    background-color: rgb(218, 124, 124);
-    padding: 30px;
-    border-radius: 10px;
-    margin: 10px;
-    width: 45%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* Botón de cierre del sidenav */
+
+.sidenav .closebtn {
+
+    position: absolute;
+
+    top: 0;
+
+    right: 25px;
+
+    font-size: 36px;
+
+    color: #e94560;
+
 }
+
+/* Encabezado principal con título y menú */
+
+#main {
+
+    padding: 0;
+
+    background-color: #162447;
+
+    color: #fff;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    transition: margin-left 0.5s;
+
+}
+
+/* Estilo del título en el encabezado principal */
+
+#main span {
+
+    font-size: 28px;
+
+    cursor: pointer;
+
+}
+
+/* Contenedor de contenido principal con diseño centrado */
+
+.main-content {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 0;
+
+    width: 100%;
+
+    background-color: #f0f2f5;
+
+}
+
+/* Configuración de los elementos del contenido principal */
+
+main {
+
+    display: flex;
+
+    justify-content: space-around;
+
+    align-items: center;
+
+    margin: 0px 5%; /* barra de menu */
+
+}
+
+/* Configuración máxima de ancho de contenido */
+
+.content {
+
+    max-width: 800px;
+
+    text-align: left;
+
+}
+
+/* Estilo del iframe para que ocupe toda la pantalla */
+
+iframe {
+
+    width: 100%;
+
+    height: 90vh;
+
+    border: none;
+
+    border-radius: 10px;
+
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+
+}
+
+/* Pie de página de la página web */
+
+footer {
+
+    color: #ffffff;
+
+    background-color: #1a1a2e;
+
+    text-align: center;
+
+    padding: 15px;
+
+    margin-top: auto;
+
+}
+
+/* Estilo de la caja de contenido (cards) en el área principal */
+
+.content-box {
+    background-color: rgba(255, 255, 255, 0.7); /* Blanco con 70% de opacidad */
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+
+/* Estilo para el título dentro de cada content-box */
 
 .content-box h2 {
-    color: #000000;
-    margin-bottom: 10px;
+
+    color: #333;
+
+    margin-bottom: 15px;
+
 }
+
+/* Estilo del texto en el content-box */
 
 .content-box p {
-    line-height: 1.6;
+
+    color: #555;
+
+    line-height: 1.8;
+
     font-size: 1.1rem;
+
 }
 
-/* Sección de Imagen */
+/* Configuración de la sección de imagen en la página */
+
 .image-box {
-    text-align: center;
-    width: 50%;
+    position: absolute;  /* Esto permite mover la imagen fuera del flujo normal */
+    top: 20px;  /* Ajusta la distancia desde la parte superior */
+    right: 20px;  /* Ajusta la distancia desde la parte derecha */
+    width: auto;  /* Deja que la imagen tenga su tamaño natural */
+    padding: 0;  /* Elimina cualquier padding extra */
 }
 
 .image-box img {
-    width: 100%;
-    max-width: 500px;
+    width: 150px;  /* Ajusta el tamaño de la imagen según necesites */
     height: auto;
     border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* Estilo del texto debajo de las imágenes */
+
 .image-box p {
+
     margin-top: 10px;
+
     font-size: 1rem;
+
+    color: #666;
+
 }
+
+/* Estilos específicos para pantallas pequeñas */
+
+@media screen and (max-height: 450px) {
+
+    .sidenav {padding-top: 15px;}
+
+    .sidenav a {font-size: 18px;}
+
+}
+
+
+
+/*------------GALERIA-DINAMICA---------------*/
+
+/* Estilo para el contenedor de la galería */
+.galeria-dinamica {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));/*tamaño de la imagen*/
+    gap: 20px;
+    padding: 40px;
+    background-color: rgba(255, 255, 255, 0.3);}
+
+/* Estilo para cada item de la galería */
+.galeria-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2); /* Sombra azul neón */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.galeria-item:hover {
+    transform: scale(1.05); /* Efecto de ampliación al pasar el cursor */
+    box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5); /* Sombra más intensa */
+}
+
+/* Estilo para las imágenes dentro de los items */
+.galeria-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.galeria-item:hover img {
+    transform: scale(1.05); /* Zoom en la imagen al hacer hover */
+}
+
+/* Efecto de brillo neón */
+.galeria-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.4), 0 0 40px rgba(0, 229, 255, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.galeria-item:hover::before {
+    opacity: 1;
+}
+
+/* Estilo para los textos de las imágenes */
+.galeria-item p {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #FFFFFF; /* Color de texto blanco */
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.8), 0 0 12px rgba(0, 229, 255, 0.5); /* Sombra de texto neón */
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: opacity 0.3s ease;
+    opacity: 0; /* Inicialmente oculto */
+}
+
+/* Muestra el texto al hacer hover en la imagen */
+.galeria-item:hover p {
+    opacity: 1;
+}
+
+
+
+
