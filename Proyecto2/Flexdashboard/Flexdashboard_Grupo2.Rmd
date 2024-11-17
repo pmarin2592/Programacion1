@@ -16,7 +16,8 @@ ipak <- function(pkg){ # funcion para instalar paquetes
   sapply(pkg, require, character.only = TRUE)
 }
 librerias <- c("dplyr","shiny","flexdashboard","leaflet","plotly","DT","readxl",
-               "scales","rnaturalearth","rnaturalearthdata","sf")
+               "scales","rnaturalearth","rnaturalearthdata","sf","openxlsx",
+               "shinyjs","tinytex")
 ipak(librerias)
 
 # Especifica la ruta del archivo
@@ -68,6 +69,8 @@ selectInput("Anio", "Seleccione un Año:",
 selectInput("Posicion", "Seleccione una Posición:", 
             choices = cmd_posiciones)
 
+# Crear botón de descarga
+downloadButton("descargar_posiciones", "Descargar CSV Posiciones")
 ```
 
 ```{r include=FALSE}
@@ -92,7 +95,19 @@ datos_filtrados <- reactive({
   #                                value_eur)) 
   df
 })
+```
 
+
+```{r}
+# Server: lógica para descargar el archivo
+  output$descargar_posiciones <- downloadHandler(
+    filename = function() {
+      "posiciones.csv"  # Nombre del archivo
+    },
+    content = function(file) {
+      write.csv(datos_filtrados(), file, row.names = FALSE)
+    }
+  )
 
 ```
 ## **Column {.sidebar data-width=4}**
@@ -302,3 +317,5 @@ renderLeaflet(leaflet(data = datos_mapas()) %>%
     fillOpacity = 0.6
   ))
 ```
+
+

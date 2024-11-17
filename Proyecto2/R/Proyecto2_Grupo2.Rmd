@@ -1,5 +1,5 @@
 ---
-title: "Atletas"
+title: "Análisis Deportivo: Rendimiento de Atletas "
 author: "Grupo 2"
 date: "2024-10-26"
 output: 
@@ -13,6 +13,7 @@ output:
     highlight: kate
     df_print: paged
     code_folding: show
+    css: styles.css
 ---
 
 ## Colegio Universitario de Cartago
@@ -51,6 +52,8 @@ origi_data21 <- read_csv("players_21.csv", col_names = TRUE)
 origi_data22<-read_csv("players_22.csv", col_names = TRUE)
 #Dataset original jugadores de fifa15
 origi_data15<-read_csv("players_15.csv", col_names = TRUE)
+
+ 
 ```
 
 ### Selección de columnas necesarias:
@@ -251,7 +254,77 @@ fun_grafico_comparativo_barras_plotly(five_data15, five_data22, 2015, 2022)
 
 # Hipotesis #2
 
+¿Cuánto varia el rango de jugadores respecto a la temporada anterior (21)y la siguiente temporada(22)? 
 
+```{r}
+# Dataset original jugadores de FIFA 21
+origi_data21 <- read_csv("players_21.csv", col_names = TRUE)
+# Dataset original jugadores de FIFA 22
+origi_data22 <- read_csv("players_22.csv", col_names = TRUE)
+```
+
+```{r}
+fun_dataNecesaria <- function(data) {
+  data <- data[, c("short_name", "player_positions", "overall", "potential",
+                   "value_eur", "age", "club_name", "league_name", "nationality_name",
+                   "preferred_foot", "pace", "shooting", "passing", "dribbling",
+                   "defending", "physic")]
+  data$clasificacion <- ifelse(data$overall >= 80, "Elite", ifelse(data$overall >= 60, "Bueno", "Promedio"))
+  return(data)
+}
+
+fdata_21 <- fun_dataNecesaria(origi_data21)
+fdata_22 <- fun_dataNecesaria(origi_data22)
+```
+
+```{r}
+get_top_players_by_position <- function(data, num_players = 2) {
+  data %>%
+    filter(clasificacion == "Elite") %>%
+    group_by(player_positions) %>%
+    arrange(desc(overall)) %>%
+    slice_head(n = num_players) %>%
+    ungroup()
+}
+
+top_players_21 <- get_top_players_by_position(fdata_21)
+top_players_22 <- get_top_players_by_position(fdata_22)
+```
+
+```{r}
+# Proporción de clasificaciones por año
+get_classification_proportions <- function(data, year) {
+  data %>%
+    group_by(clasificacion) %>%
+    summarise(count = n()) %>%
+    mutate(proportion = count / sum(count),
+           year = year)
+}
+
+classification_21 <- get_classification_proportions(fdata_21, 2015)
+classification_22 <- get_classification_proportions(fdata_22, 2022)
+
+# Combinar datos de proporciones
+combined_classifications <- rbind(classification_21, classification_22)
+
+# Gráfico circular para 2021
+pie_2021 <- plot_ly(classification_21, labels = ~clasificacion, values = ~proportion, type = 'pie',
+                    textinfo = 'label+percent', insidetextorientation = 'radial',
+                    hoverinfo = 'text',
+                    text = ~paste("Clasificación:", clasificacion, "<br>Proporción:", round(proportion * 100, 2), "%")) %>%
+  layout(title = "Distribución de Clasificaciones (FIFA 21)")
+
+# Gráfico circular para 2022
+pie_2022 <- plot_ly(classification_22, labels = ~clasificacion, values = ~proportion, type = 'pie',
+                    textinfo = 'label+percent', insidetextorientation = 'radial',
+                    hoverinfo = 'text',
+                    text = ~paste("Clasificación:", clasificacion, "<br>Proporción:", round(proportion * 100, 2), "%")) %>%
+  layout(title = "Distribución de Clasificaciones (FIFA 22)")
+
+# Mostrar gráficos interactivos
+pie_2021
+pie_2022
+```
 
 # Hipotesis #3
 
@@ -521,6 +594,43 @@ fun_radar_triple_interactivo('K. De Bruyne',fdata_22,fdata_21,fdata_15,2022,2021
 ```
 
 # Hipotesis #4
+
+Conforme a la edad como afectan las habilidades del jugador
+
+```{r}
+# Cargar el dataset de jugadores de FIFA 22
+data <- read_csv("players_22.csv", col_names = TRUE)
+
+# Seleccionar columnas relevantes
+data <- data %>%
+  select(short_name, age, overall, pace, shooting, passing, dribbling, defending, physic) %>%
+  filter(!is.na(age) & !is.na(overall))  # Filtrar datos NA
+```
+
+
+```{r}
+# Crear un gráfico interactivo que muestre la relación entre la edad y las habilidades
+p <- ggplot(data, aes(x = age)) +
+  geom_point(aes(y = overall, color = "Overall"), alpha = 0.6) +
+  geom_point(aes(y = pace, color = "Pace"), alpha = 0.6) +
+  geom_point(aes(y = shooting, color = "Shooting"), alpha = 0.6) +
+  geom_point(aes(y = passing, color = "Passing"), alpha = 0.6) +
+  geom_point(aes(y = dribbling, color = "Dribbling"), alpha = 0.6) +
+  geom_point(aes(y = defending, color = "Defending"), alpha = 0.6) +
+  geom_point(aes(y = physic, color = "Physic"), alpha = 0.6) +
+  labs(title = "Relación entre Edad y Habilidades de los Jugadores",
+       x = "Edad",
+       y = "Habilidades",
+       color = "Habilidad") +
+  theme_minimal()
+
+# Convertir el gráfico a un gráfico interactivo con plotly
+interactive_plot <- ggplotly(p)
+
+# Mostrar el gráfico interactivo
+interactive_plot
+```
+
 
 
 # Otros graficos
