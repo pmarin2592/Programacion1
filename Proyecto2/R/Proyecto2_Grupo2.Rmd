@@ -256,7 +256,7 @@ fun_grafico_comparativo_barras_plotly(five_data15, five_data22, 2015, 2022)
 
 ¿Cuánto varia el rango de jugadores respecto a la temporada anterior (21)y la siguiente temporada(22)? 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # Dataset original jugadores de FIFA 21
 origi_data21 <- read_csv("players_21.csv", col_names = TRUE)
 # Dataset original jugadores de FIFA 22
@@ -301,7 +301,7 @@ get_classification_proportions <- function(data, year) {
            year = year)
 }
 
-classification_21 <- get_classification_proportions(fdata_21, 2015)
+classification_21 <- get_classification_proportions(fdata_21, 2021)
 classification_22 <- get_classification_proportions(fdata_22, 2022)
 
 # Combinar datos de proporciones
@@ -597,7 +597,7 @@ fun_radar_triple_interactivo('K. De Bruyne',fdata_22,fdata_21,fdata_15,2022,2021
 
 Conforme a la edad como afectan las habilidades del jugador
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # Cargar el dataset de jugadores de FIFA 22
 data <- read_csv("players_22.csv", col_names = TRUE)
 
