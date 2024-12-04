@@ -1,0 +1,140 @@
+---
+title: "Dashboard_Grupo3"
+author: 'Grupo #3'
+date: "2024-12-03"
+output: flexdashboard::flex_dashboard
+runtime: shiny
+css: styles.css
+---
+
+```{r setup, include=FALSE}
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+ipak <- function(pkg){ # funcion para instalar paquetes
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+librerias <- c("httr","jsonlite","tidyverse","reticulate","leaflet","leaflet.extras","DT","readxl")
+ipak(librerias)
+api_key <- "34f37e6289a702e97dc704c6e2fcc6ca"  
+
+
+
+# Crea una lista para almacenar los datos de cada hoja
+ubicaciones <-read_excel("cr.xlsx")
+
+ubicaciones <- ubicaciones %>% select(city,lat,lng)
+colnames(ubicaciones) <- c("ubicacion", "lat", "lon") 
+
+
+
+# Función para obtener los datos de calidad del aire
+get_air_quality <- function(lat, lon, api_key, ubicacion) {
+  # Generar la URL de la API
+  url <- paste0("http://api.openweathermap.org/data/2.5/air_pollution?lat=", lat,
+                "&lon=", lon, "&appid=", api_key)
+  # Hacer la solicitud GET
+  response <- GET(url)
+  
+  # Convertir la respuesta JSON a un objeto R
+  air_quality <- fromJSON(content(response, "text", encoding = "UTF-8"))
+  
+  # Extraer la lista de componentes
+  df_list <- air_quality$list
+  
+  # Crear un data frame combinando las columnas 'main' y 'components'
+df <- data.frame(
+  ubicacion = ubicacion,
+  lat = lat,
+  lon= lon,
+  aqi = df_list$main$aqi,
+  co = df_list$components$co,
+  no = df_list$components$no,
+  no2 = df_list$components$no2,
+  o3 = df_list$components$o3,
+  so2 = df_list$components$so2,
+  pm2_5 = df_list$components$pm2_5,
+  pm10 = df_list$components$pm10,
+  nh3 = df_list$components$nh3,
+  dt = df_list$dt,
+  stringsAsFactors = FALSE  # Asegurarse de que no convierta a factores
+)
+
+  return(df)
+}
+
+
+# Llamar a la función para obtener los datos de calidad del aire para cada ubicación
+resultados <- lapply(1:nrow(ubicaciones), function(i) {
+  get_air_quality(ubicaciones$lat[i], ubicaciones$lon[i], api_key,ubicaciones$ubicacion[i])
+})
+
+# Combinar los resultados en un solo data frame
+df_resultados <- do.call(rbind, resultados)
+
+```
+Gráficos 1
+=======================================================================
+## **Column {.sidebar data-width=4}**
+### **Mapa con CO**
+```{r}
+leaflet(data = df_resultados) %>%
+  addTiles() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addHeatmap(
+    lng = ~lon, lat = ~lat,
+    intensity = ~co, # Variable de intensidad
+    blur = 20, max = 0.1
+  )
+```
+
+### **Mapa con no2**
+```{r}
+leaflet(data = df_resultados) %>%
+  addTiles() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addHeatmap(
+    lng = ~lon, lat = ~lat,
+    intensity = ~no2, # Variable de intensidad
+    blur = 20, max = 0.1
+  )
+```
+## 
+### **Mapa o3 **
+```{r}
+leaflet(data = df_resultados) %>%
+  addTiles() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addHeatmap(
+    lng = ~lon, lat = ~lat,
+    intensity = ~o3, # Variable de intensidad
+    blur = 20, max = 0.1
+  )
+```
+### **Mapa pm10 **
+```{r}
+leaflet(data = df_resultados) %>%
+  addTiles() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addHeatmap(
+    lng = ~lon, lat = ~lat,
+    intensity = ~no2, # Variable de intensidad
+    blur = 20, max = 0.1
+  )
+```
+Tabla
+=======================================================================
+
+## **Column {.sidebar data-width=4}**
+### **Tabla Interactiva con DT**
+
+```{r}
+
+# Selecciona solo las columnas que deseas mostrar
+
+  datatable(df_resultados)
+
+
+  
+

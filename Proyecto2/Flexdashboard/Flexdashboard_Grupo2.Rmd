@@ -117,12 +117,13 @@ datos_filtrados <- reactive({
 
 # Selecciona solo las columnas que deseas mostrar
 renderDT({
+  HTML("<h3>Listado de Jugadores</h3>")
   datatable(datos_filtrados()[, c("short_name", "overall", "potential", "age", "club_name")])
 })
 
   
 ```
-### **Gráfico Potencial vs Precio**
+### **Gráfico Potencial vs Salario**
 
 ```{r}
 
@@ -132,7 +133,7 @@ renderPlotly(
     
     p <- ggplot(datos_filtrados(), aes(x = potential, y = wage_eur)) +
             geom_point(color = "steelblue") +  # Esto agrega puntos de color
-            labs(x = "Potential", y = "Wage EUR", title = "Potential & Wage") +
+            labs(x = "Potencial", y = "Salario en EU", title = "Relacion del potencial y Salario") +
              theme_minimal(base_size = 15) +     # Tema minimalista y tamaño base de texto
               theme(plot.title = element_text(size = 18, hjust = 0.5)) + # Tamaño del título y centrado
        scale_y_continuous(labels = label_number(scale = 1, big.mark = ","))  # Formato legible para el eje y
@@ -145,7 +146,7 @@ renderPlotly(
 ```
 
 ## 
-### **Gráfico Interactivo con Plotly**
+### **Gráfico Interactivo entre Altura y potencial**
 ```{r}
  renderPlotly({
    # Crear el gráfico de dispersión con Plotly
@@ -159,7 +160,7 @@ plot_ly(datos_filtrados(), x = ~height_cm, y = ~potential, type = 'scatter', mod
  })
 ```
 
-### **Gráfico ggplot**
+### **Gráfico Relacion Top 15**
 
 ```{r}
 
@@ -169,7 +170,7 @@ renderPlotly(
     top_players <- datos_filtrados()[order(- datos_filtrados()$potential), ][1:15, ]
     p <- ggplot(top_players, aes(x = overall, y = age, text = short_name)) +
     geom_point() +
-      labs(title = "Overall vs Edad TOP 15",
+      labs(title = "Relacion del Overall vs Edad para el TOP 15",
            x = "Overall",
            y = "Edad") +
       theme_minimal()
@@ -272,7 +273,7 @@ renderPlotly(
 Mapa
 =======================================================================
 ##
-### **Mapa**
+### **Distribución de jugadores por país**
 ```{r}
 datos_mapas <- reactive({
   # Calcula la cantidad de jugadores por país

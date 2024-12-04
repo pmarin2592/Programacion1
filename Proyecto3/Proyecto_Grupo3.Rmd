@@ -1,0 +1,137 @@
+---
+title: "Estudio de la calidad del aire en zonas urbanas utilizando IoT"
+author: 'Grupo #3'
+date: "2024-12-01"
+output: 
+  rmdformats::material:
+    highlight: kate
+    df_print: paged
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+ipak <- function(pkg){ # funcion para instalar paquetes
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+librerias <- c("httr","jsonlite","tidyverse","reticulate")
+ipak(librerias)
+api_key <- "34f37e6289a702e97dc704c6e2fcc6ca"  
+start <- 1730419200  # 1 de noviembre de 2024
+end <- 1730678399    # 3 de noviembre de 2024
+```
+
+# Portada
+
+# Introducción
+
+# Exploracion de Datos {.tabset .tabset-fade .tabset-pills}
+
+## Codigo R
+
+```{r}
+# Lista de provincias con sus coordenadas (ejemplo para Costa Rica)
+# Crear un data.frame con provincias, latitudes y longitudes
+ubicaciones <- data.frame(
+  ubicacion = c("San José", "Alajuela", "Limón", "Liberia", "San Francisco", 
+                "San José", "San Felipe", "San Miguel", "Puntarenas", "San Isidro", 
+                "San Vicente", "San Pedro", "Cartago", "Heredia", "San Juan", 
+                "Guadalupe", "San Pablo", "San Rafael", "Colima", "Concepción"),
+  lat = c(9.93333, 10.01625, 9.99074, 10.63504, 9.9938, 
+          10.95192, 9.90444, 9.87121, 9.97691, 9.3674, 
+          9.96194, 9.92829, 9.86444, 10.00236, 9.96188, 
+          9.94805, 9.99559, 9.92826, 9.95532, 9.92683),
+  lon = c(-84.08333, -84.21163, -83.03596, -85.43772, -84.12742, 
+          -85.13572, -84.1062, -84.06084, -84.8379, -83.69713, 
+          -84.0494, -84.05074, -83.91944, -84.11651, -84.07876, 
+          -84.05665, -84.09656, -84.13537, -84.08235, -84.00123)
+)
+
+# Función para obtener los datos de calidad del aire
+get_air_quality <- function(lat, lon, api_key, start, end, ubicacion) {
+  # Generar la URL de la API
+  url <- paste0("http://api.openweathermap.org/data/2.5/air_pollution/history?lat=", lat,
+                "&lon=", lon, "&start=", start, "&end=", end, "&appid=", api_key)
+  
+  # Hacer la solicitud GET
+  response <- GET(url)
+  
+  # Convertir la respuesta JSON a un objeto R
+  air_quality <- fromJSON(content(response, "text", encoding = "UTF-8"))
+  
+  # Extraer la lista de componentes
+  df_list <- air_quality$list
+  
+  # Crear un data frame combinando las columnas 'main' y 'components'
+df <- data.frame(
+  ubicacion = ubicacion,
+  aqi = df_list$main$aqi,
+  co = df_list$components$co,
+  no = df_list$components$no,
+  no2 = df_list$components$no2,
+  o3 = df_list$components$o3,
+  so2 = df_list$components$so2,
+  pm2_5 = df_list$components$pm2_5,
+  pm10 = df_list$components$pm10,
+  nh3 = df_list$components$nh3,
+  dt = df_list$dt,
+  stringsAsFactors = FALSE  # Asegurarse de que no convierta a factores
+)
+
+  return(df)
+}
+
+
+# Llamar a la función para obtener los datos de calidad del aire para cada ubicación
+resultados <- lapply(1:nrow(ubicaciones), function(i) {
+  get_air_quality(ubicaciones$lat[i], ubicaciones$lon[i], api_key, start, end,ubicaciones$ubicacion[i])
+})
+
+# Combinar los resultados en un solo data frame
+df_resultados <- do.call(rbind, resultados)
+
+
+# Usar reticulate para pasar los resultados de R a Python
+resultados_py <- r_to_py(df_resultados)
+
+print(head(df_resultados, 10))
+
+```
+
+## Codigo Python
+
+```{r}
+reticulate::py_install("pandas")
+# Pasar la variable `resultados_py` al entorno de Python
+py$results<- resultados_py
+# Ejecutar el código Python correctamente dentro de py_run_string
+# Ejecutar código Python dentro de R
+reticulate::py_run_string("
+import pandas as pd
+
+# Convertir la lista de resultados de R en un DataFrame de Python
+resultados_df = pd.DataFrame(results)
+
+# Mostrar las primeras filas del DataFrame
+print(resultados_df.head())
+")
+```
+
+# Preprocesamiento de Datos
+
+# Análisis Exploratorio de Datos {.tabset .tabset-fade .tabset-pills}
+
+## Codigo R
+
+## Codigo Python
+
+# Integración con Python
+
+# Modelado Predictivo
+
+# Visualización Interactiva
+
+# Conclusiones
