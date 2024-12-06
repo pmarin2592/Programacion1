@@ -27,7 +27,7 @@ ubicaciones <-read_excel("cr.xlsx")
 ubicaciones <- ubicaciones %>% select(city,lat,lng)
 colnames(ubicaciones) <- c("ubicacion", "lat", "lon") 
 
-
+ubicaciones <- head(ubicaciones,20)
 
 # Función para obtener los datos de calidad del aire
 get_air_quality <- function(lat, lon, api_key, ubicacion) {
@@ -35,7 +35,7 @@ get_air_quality <- function(lat, lon, api_key, ubicacion) {
   url <- paste0("http://api.openweathermap.org/data/2.5/air_pollution?lat=", lat,
                 "&lon=", lon, "&appid=", api_key)
   # Hacer la solicitud GET
-  response <- GET(url)
+  response <- GET(url,timeout(50))
   
   # Convertir la respuesta JSON a un objeto R
   air_quality <- fromJSON(content(response, "text", encoding = "UTF-8"))
@@ -57,21 +57,24 @@ df <- data.frame(
   pm2_5 = df_list$components$pm2_5,
   pm10 = df_list$components$pm10,
   nh3 = df_list$components$nh3,
-  dt = df_list$dt,
+  dt =  format(as.POSIXct(df_list$dt, origin = "1970-01-01", tz = "UTC"), tz = "America/Costa_Rica", usetz = TRUE),
   stringsAsFactors = FALSE  # Asegurarse de que no convierta a factores
 )
 
   return(df)
 }
+# Timer reactivo
+timer <- reactiveTimer(300000)  # Actualización cada 5 minutos (300,000 ms)
 
 
-# Llamar a la función para obtener los datos de calidad del aire para cada ubicación
-resultados <- lapply(1:nrow(ubicaciones), function(i) {
-  get_air_quality(ubicaciones$lat[i], ubicaciones$lon[i], api_key,ubicaciones$ubicacion[i])
+# Datos reactivos
+air_quality_data <- reactive({
+  timer()  # Controla la actualización periódica
+  resultados <- lapply(1:nrow(ubicaciones), function(i) {
+    get_air_quality(ubicaciones$lat[i], ubicaciones$lon[i], api_key, ubicaciones$ubicacion[i])
+  })
+  do.call(rbind, Filter(Negate(is.null), resultados))  # Combina resultados no nulos
 })
-
-# Combinar los resultados en un solo data frame
-df_resultados <- do.call(rbind, resultados)
 
 ```
 Gráficos 1
@@ -79,49 +82,53 @@ Gráficos 1
 ## **Column {.sidebar data-width=4}**
 ### **Mapa con CO**
 ```{r}
-leaflet(data = df_resultados) %>%
+renderLeaflet({
+leaflet(data = air_quality_data()) %>%
   addTiles() %>%
   addProviderTiles("CartoDB.Positron") %>%
   addHeatmap(
     lng = ~lon, lat = ~lat,
     intensity = ~co, # Variable de intensidad
     blur = 20, max = 0.1
-  )
+  )})
 ```
 
 ### **Mapa con no2**
 ```{r}
-leaflet(data = df_resultados) %>%
+renderLeaflet({
+leaflet(data = air_quality_data()) %>%
   addTiles() %>%
   addProviderTiles("CartoDB.Positron") %>%
   addHeatmap(
     lng = ~lon, lat = ~lat,
     intensity = ~no2, # Variable de intensidad
     blur = 20, max = 0.1
-  )
+  )})
 ```
 ## 
 ### **Mapa o3 **
 ```{r}
-leaflet(data = df_resultados) %>%
+renderLeaflet({
+leaflet(data = air_quality_data()) %>%
   addTiles() %>%
   addProviderTiles("CartoDB.Positron") %>%
   addHeatmap(
     lng = ~lon, lat = ~lat,
     intensity = ~o3, # Variable de intensidad
     blur = 20, max = 0.1
-  )
+  )})
 ```
 ### **Mapa pm10 **
 ```{r}
-leaflet(data = df_resultados) %>%
+renderLeaflet({
+leaflet(data = air_quality_data()) %>%
   addTiles() %>%
   addProviderTiles("CartoDB.Positron") %>%
   addHeatmap(
     lng = ~lon, lat = ~lat,
     intensity = ~no2, # Variable de intensidad
     blur = 20, max = 0.1
-  )
+  )})
 ```
 Tabla
 =======================================================================
@@ -132,9 +139,9 @@ Tabla
 ```{r}
 
 # Selecciona solo las columnas que deseas mostrar
-
-  datatable(df_resultados)
-
+renderDataTable({
+  datatable(air_quality_data())
+})
 
   
 
